@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/action_undo"
+        android:icon="@drawable/ic_undo"
+        android:title="@string/toolbar_undo"
+        android:enabled="false"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/action_sort_by_size"
+        android:icon="@drawable/ic_sort_by_size"
+        android:title="@string/sort_by_size"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/action_toggle_random"
+        android:icon="@drawable/ic_shuffle"
+        android:title="@string/toggle_random"
+        app:showAsAction="ifRoom" />
+</menu>

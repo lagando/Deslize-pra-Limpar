@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Deslize pra Limpar</string>
+    <string name="nav_header_title">Deslize pra Limpar</string>
+    <string name="nav_header_subtitle">Limpe seu celular facilmente</string>
+    <string name="menu_home">Início</string>
+    <string name="menu_trash">Lixeira</string>
+    <string name="btn_delete">Excluir</string>
+    <string name="btn_keep">Manter</string>
+    <string name="btn_empty_trash">Esvaziar Lixeira</string>
+    <string name="btn_restore">Restaurar</string>
+    <string name="btn_delete_permanent">Excluir Permanentemente</string>
+    <string name="all_clean_title">Tudo limpo! 🎉</string>
+    <string name="all_clean_subtitle">Você revisou todas as mídias do seu celular.</string>
+    <string name="no_permission_title">Precisamos de acesso</string>
+    <string name="no_permission_subtitle">Permita o acesso às suas fotos e vídeos para começar a limpar.</string>
+    <string name="btn_grant_permission">Permitir Acesso</string>
+    <string name="trash_empty_title">Lixeira vazia</string>
+    <string name="trash_empty_subtitle">Nenhum item marcado para exclusão.</string>
+    <string name="counter_format">%1$d de %2$d</string>
+    <plurals name="trash_expires_in">
+        <item quantity="one">Expira em %1$d dia</item>
+        <item quantity="other">Expira em %1$d dias</item>
+    </plurals>
+    <string name="trash_total_size">Espaço a liberar: %1$s</string>
+    <plurals name="trash_item_count">
+        <item quantity="one">%1$d item na lixeira</item>
+        <item quantity="other">%1$d itens na lixeira</item>
+    </plurals>
+    <string name="confirm_empty_trash">Tem certeza que deseja excluir permanentemente todos os itens da lixeira?</string>
+    <string name="confirm_title">Confirmar</string>
+    <string name="cancel">Cancelar</string>
+
+    <string name="video_label">Vídeo</string>
+    <string name="swipe_hint">← Excluir | Manter →</string>
+
+    <string name="btn_decide_later">Decidir depois</string>
+    <string name="toggle_random">Aleatório</string>
+    <string name="mode_random">Aleatório ativado</string>
+    <string name="mode_sequential">Modo sequencial</string>
+    <string name="sort_by_size">Ordenar por tamanho</string>
+    <string name="mode_sort_by_size">Maiores primeiro</string>
+    <string name="mode_sort_by_date">Ordem por data</string>
+    <string name="mode_random_detail">Exibindo em ordem aleatória</string>
+    <string name="mode_sequential_detail">Mostrando os mais recentes primeiro</string>
+    <string name="mode_sort_by_size_detail">Mostrando os arquivos mais pesados</string>
+    <string name="mode_sort_by_date_detail">Mostrando os mais recentes primeiro</string>
+    <string name="made_by_lagando">Feito por Lagando</string>
+    <string name="website_url_display">lagando.com.br</string>
+    <string name="website_url">https://lagando.com.br/</string>
+    <string name="version_label">v1.0.13</string>
+    <string name="menu_kept">Fotos Mantidas</string>
+    <plurals name="kept_count">
+        <item quantity="one">%1$d foto mantida</item>
+        <item quantity="other">%1$d fotos mantidas</item>
+    </plurals>
+    <string name="kept_hint">Segure para selecionar</string>
+    <string name="kept_empty_title">Nenhuma foto mantida</string>
+    <string name="kept_empty_subtitle">Fotos que você escolher manter aparecerão aqui.</string>
+    <plurals name="selection_count">
+        <item quantity="one">%1$d selecionada</item>
+        <item quantity="other">%1$d selecionadas</item>
+    </plurals>
+    <string name="btn_trash_selected">Excluir</string>
+    <plurals name="confirm_trash_selected">
+        <item quantity="one">Mover %1$d item para a lixeira?</item>
+        <item quantity="other">Mover %1$d itens para a lixeira?</item>
+    </plurals>
+
+    <!-- Photo Viewer -->
+    <string name="share">Compartilhar</string>
+    <string name="share_promo_text">Achei isso limpando minha galeria com o Deslize pra Limpar 👉 https://play.google.com/store/apps/details?id=com.lagando.deslize</string>
+    <string name="share_promo_text_random">Achei isso no modo aleatório do Deslize pra Limpar 😂 👉 https://play.google.com/store/apps/details?id=com.lagando.deslize</string>
+    <string name="open_with">Abrir com…</string>
+
+    <!-- Tutorial -->
+    <string name="tutorial_title">Como usar o Deslize pra Limpar</string>
+    <string name="tutorial_message">📱 Arraste para a esquerda para excluir\n\n💚 Arraste para a direita para manter\n\n⏭️ Toque em \"Decidir depois\" para pular\n\n🗑️ Depois, vá na Lixeira para liberar o espaço de verdade!</string>
+    <string name="tutorial_ok">Entendi!</string>
+    <string name="space_counter_loading">Espaço a liberar: calculando…</string>
+    <string name="space_counter_format">🗑️ Espaço a liberar: %1$s</string>
+    <string name="space_counter_empty">Nenhum espaço a liberar</string>
+    <string name="space_freed_format">✨ Total liberado: %1$s</string>
+    <string name="space_freed_empty">Nenhum espaço liberado ainda</string>
+
+
+    <!-- Emojis (extracted for lint compliance) -->
+    <string name="emoji_party">🎉</string>
+    <string name="emoji_lock">🔒</string>
+    <string name="emoji_camera">📸</string>
+    <string name="emoji_trash">🗑️</string>
+    <string name="emoji_play">▶</string>
+    <string name="toolbar_undo">Desfazer</string>
+    <string name="file_info_format">%1$s • %2$s</string>
+
+    <!-- Notifications -->
+    <string name="notification_channel_name">Limpeza Automática</string>
+    <plurals name="notification_expired_text">
+        <item quantity="one">Você tem %1$d item expirado na lixeira. Abra para liberar espaço.</item>
+        <item quantity="other">Você tem %1$d itens expirados na lixeira. Abra para liberar espaço.</item>
+    </plurals>
+
+    <!-- Misc -->
+    <string name="unknown_filename">desconhecido</string>
+    <string name="badge_overflow">99+</string>
+
+    <!-- All Clean permission hint -->
+    <string name="all_clean_no_permission_hint">Parece que não temos acesso a todas as suas fotos.\nPermita o acesso para encontrar mais.</string>
+    <string name="btn_open_settings">Abrir Configurações</string>
+    <plurals name="trash_reminder_message">
+        <item quantity="one">Você tem %1$d item na lixeira.</item>
+        <item quantity="other">Você tem %1$d itens na lixeira.</item>
+    </plurals>
+    <string name="trash_reminder_title">🗑️ Lembrete da lixeira</string>
+    <string name="trash_reminder_size">Espaço a liberar: %1$s</string>
+    <string name="trash_reminder_action">Ver Lixeira</string>
+    <string name="trash_reminder_dismiss">Depois</string>
+    <string name="btn_unreview_selected">Decidir de novo</string>
+    <plurals name="confirm_unreview_selected">
+        <item quantity="one">Devolver %1$d item para a tela de swipe?</item>
+        <item quantity="other">Devolver %1$d itens para a tela de swipe?</item>
+    </plurals>
+</resources>

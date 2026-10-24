@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <group android:id="@+id/nav_main_group"
+        android:checkableBehavior="single">
+        <item
+            android:id="@+id/nav_home"
+            android:icon="@drawable/ic_home"
+            android:title="@string/menu_home" />
+        <item
+            android:id="@+id/nav_kept"
+            android:icon="@drawable/ic_photo_library"
+            android:title="@string/menu_kept" />
+        <item
+            android:id="@+id/nav_trash"
+            android:icon="@drawable/ic_trash"
+            android:title="@string/menu_trash" />
+    </group>
+    <group android:id="@+id/nav_info_group"
+        android:checkableBehavior="none">
+        <item
+            android:id="@+id/nav_space_counter"
+            android:title="@string/space_counter_loading"
+            android:enabled="false" />
+        <item
+            android:id="@+id/nav_space_freed"
+            android:title="@string/space_freed_empty"
+            android:enabled="false" />
+    </group>
+</menu>

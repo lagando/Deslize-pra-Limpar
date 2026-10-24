@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Swipe to Clean</string>
+    <string name="nav_header_title">Swipe to Clean</string>
+    <string name="nav_header_subtitle">Clean your phone easily</string>
+    <string name="menu_home">Home</string>
+    <string name="menu_trash">Trash</string>
+    <string name="btn_delete">Delete</string>
+    <string name="btn_keep">Keep</string>
+    <string name="btn_empty_trash">Empty Trash</string>
+    <string name="btn_restore">Restore</string>
+    <string name="btn_delete_permanent">Delete Permanently</string>
+    <string name="all_clean_title">All clean! 🎉</string>
+    <string name="all_clean_subtitle">You have reviewed all media on your phone.</string>
+    <string name="no_permission_title">Access required</string>
+    <string name="no_permission_subtitle">Allow access to your photos and videos to start cleaning.</string>
+    <string name="btn_grant_permission">Allow Access</string>
+    <string name="trash_empty_title">Trash is empty</string>
+    <string name="trash_empty_subtitle">No items marked for deletion.</string>
+    <string name="counter_format">%1$d of %2$d</string>
+    <plurals name="trash_expires_in">
+        <item quantity="one">Expires in %1$d day</item>
+        <item quantity="other">Expires in %1$d days</item>
+    </plurals>
+    <string name="trash_total_size">Space to free: %1$s</string>
+    <plurals name="trash_item_count">
+        <item quantity="one">%1$d item in trash</item>
+        <item quantity="other">%1$d items in trash</item>
+    </plurals>
+    <string name="confirm_empty_trash">Are you sure you want to permanently delete all items in the trash?</string>
+    <string name="confirm_title">Confirm</string>
+    <string name="cancel">Cancel</string>
+
+    <string name="video_label">Video</string>
+    <string name="swipe_hint">← Delete | Keep →</string>
+
+    <string name="btn_decide_later">Decide later</string>
+    <string name="toggle_random">Random</string>
+    <string name="mode_random">Random mode</string>
+    <string name="mode_sequential">Sequential mode</string>
+    <string name="sort_by_size">Sort by size</string>
+    <string name="mode_sort_by_size">Largest first</string>
+    <string name="mode_sort_by_date">Date order</string>
+    <string name="mode_random_detail">Showing in random order</string>
+    <string name="mode_sequential_detail">Showing newest first</string>
+    <string name="mode_sort_by_size_detail">Showing heaviest files first</string>
+    <string name="mode_sort_by_date_detail">Showing newest first</string>
+    <string name="made_by_lagando">Made by Lagando</string>
+    <string name="website_url_display">lagando.com.br</string>
+    <string name="website_url">https://lagando.com.br/</string>
+    <string name="version_label">v1.0.13</string>
+    <string name="menu_kept">Kept Photos</string>
+    <plurals name="kept_count">
+        <item quantity="one">%1$d kept photo</item>
+        <item quantity="other">%1$d kept photos</item>
+    </plurals>
+    <string name="kept_hint">Hold to select</string>
+    <string name="kept_empty_title">No kept photos</string>
+    <string name="kept_empty_subtitle">Photos you choose to keep will appear here.</string>
+    <plurals name="selection_count">
+        <item quantity="one">%1$d selected</item>
+        <item quantity="other">%1$d selected</item>
+    </plurals>
+    <string name="btn_trash_selected">Delete</string>
+    <plurals name="confirm_trash_selected">
+        <item quantity="one">Move %1$d item to the trash?</item>
+        <item quantity="other">Move %1$d items to the trash?</item>
+    </plurals>
+    <string name="share">Share</string>
+    <string name="share_promo_text">Found this while cleaning my gallery with Swipe to Clean 👉 https://play.google.com/store/apps/details?id=com.lagando.deslize</string>
+    <string name="share_promo_text_random">Found this on random mode in Swipe to Clean 😂 👉 https://play.google.com/store/apps/details?id=com.lagando.deslize</string>
+    <string name="open_with">Open with…</string>
+    <string name="tutorial_title">How to use Swipe to Clean</string>
+    <string name="tutorial_message">📱 Swipe left to delete\n\n💚 Swipe right to keep\n\n⏭️ Tap \"Decide later\" to skip\n\n🗑️ Later, go to the Trash to actually free up space!</string>
+    <string name="tutorial_ok">Got it!</string>
+    <string name="space_counter_loading">Space to free: calculating…</string>
+    <string name="space_counter_format">🗑️ Space to free: %1$s</string>
+    <string name="space_counter_empty">No space to free</string>
+    <string name="space_freed_format">✨ Total freed: %1$s</string>
+    <string name="space_freed_empty">No space freed yet</string>
+
+
+    <!-- Emojis (extracted for lint compliance) -->
+    <string name="emoji_party">🎉</string>
+    <string name="emoji_lock">🔒</string>
+    <string name="emoji_camera">📸</string>
+    <string name="emoji_trash">🗑️</string>
+    <string name="emoji_play">▶</string>
+    <string name="toolbar_undo">Undo</string>
+    <string name="file_info_format">%1$s • %2$s</string>
+
+    <!-- Notifications -->
+    <string name="notification_channel_name">Automatic Cleanup</string>
+    <plurals name="notification_expired_text">
+        <item quantity="one">You have %1$d expired item in the trash. Open to free up space.</item>
+        <item quantity="other">You have %1$d expired items in the trash. Open to free up space.</item>
+    </plurals>
+
+    <!-- Misc -->
+    <string name="unknown_filename">unknown</string>
+    <string name="badge_overflow">99+</string>
+
+    <!-- All Clean permission hint -->
+    <string name="all_clean_no_permission_hint">It looks like we don\'t have access to all your photos.\nAllow access to find more.</string>
+    <string name="btn_open_settings">Open Settings</string>
+    <plurals name="trash_reminder_message">
+        <item quantity="one">You have %1$d item in the trash.</item>
+        <item quantity="other">You have %1$d items in the trash.</item>
+    </plurals>
+    <string name="trash_reminder_title">🗑️ Trash reminder</string>
+    <string name="trash_reminder_size">Space to free: %1$s</string>
+    <string name="trash_reminder_action">View Trash</string>
+    <string name="trash_reminder_dismiss">Later</string>
+    <string name="btn_unreview_selected">Re-swipe</string>
+    <plurals name="confirm_unreview_selected">
+        <item quantity="one">Return %1$d item to the swipe screen?</item>
+        <item quantity="other">Return %1$d items to the swipe screen?</item>
+    </plurals>
+</resources>
