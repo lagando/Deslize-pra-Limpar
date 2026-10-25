@@ -59,7 +59,7 @@ O **Deslize pra Limpar** é um aplicativo Android leve e eficiente para organiza
 | Detalhe | Valor |
 |---------|-------|
 | **Versão** | 1.0.14 |
-| **SDK Mínimo** | Android 6.0 (API 23) |
+| **SDK Mínimo** | Android 7.0 (API 24) |
 | **SDK Alvo** | Android 15 (API 37) |
 | **Idiomas** | Português (PT-BR) e Inglês |
 | **Linguagem** | Kotlin 100% |
