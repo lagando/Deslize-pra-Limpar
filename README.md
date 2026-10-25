@@ -84,8 +84,8 @@ O **Deslize pra Limpar** é um aplicativo Android leve e eficiente para organiza
 
 1. **Clone o repositório:**
    ```bash
-   git clone git@github.com:lagando/LeitorAFK.git
-   cd LeitorAFK
+   git clone git@github.com:lagando/Deslize-pra-limpar.git
+   cd Deslize-pra-limpar
    ```
 
 2. **Abra no Android Studio:**
