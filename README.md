@@ -4,7 +4,7 @@ A forma mais rápida de organizar sua galeria e liberar espaço no Android.
 
 [![Google Play](https://img.shields.io/badge/Google%20Play-Install-414141?style=for-the-badge&logo=google-play&logoColor=white)](https://play.google.com/store/apps/details?id=com.lagando.deslize)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](LICENSE)
-[![Version](https://img.shields.io/badge/version-1.0.13-green?style=for-the-badge)](https://play.google.com/store/apps/details?id=com.lagando.deslize)
+[![Version](https://img.shields.io/badge/version-1.0.14-green?style=for-the-badge)](CHANGELOG.md)
 
 <p align="center">
   <img src="logo2.png" alt="Deslize pra Limpar" width="200"/>
@@ -23,7 +23,7 @@ O **Deslize pra Limpar** é um aplicativo Android leve e eficiente para organiza
 
 > **TODO**: Adicionar screenshots reais do app aqui.
 >
-> Recomendação: 3-4 prints mostrando a tela de swipe, a lixeira, a tela de "tudo limpo" e o menu lateral.
+> Recomendação: 3-4 prints mostrando a tela de swipe, o filtro de pastas, a lixeira com multi-seleção e o menu lateral.
 
 ## Funcionalidades
 
@@ -32,14 +32,15 @@ O **Deslize pra Limpar** é um aplicativo Android leve e eficiente para organiza
 | **Deslizar para excluir** | Deslize para a esquerda para remover fotos/vídeos |
 | **Deslizar para manter** | Deslize para a direita para arquivar/manter o arquivo |
 | **Decidir depois** | Pule itens que você quer rever mais tarde |
+| **Filtrar por pasta/álbum** | Filtre por pastas específicas (Camera, WhatsApp, Screenshots, etc.) |
 | **Modos de exibição** | Aleatório, sequencial, por tamanho ou data |
 | **Desfazer** | Desfaça o último swipe com um toque |
 | **Fotos mantidas** | Galeria com grid das fotos que você decidiu manter |
-| **Lixeira** | Área segura para arquivos removidos antes da exclusão permanente |
-| **Limpeza automática** | Coleta periódica de itens expirados na lixeira (30 dias) |
+| **Lixeira com multi-seleção** | Selecione vários itens na lixeira para restaurar ou excluir de uma vez |
+| **Suporte a GIFs** | Identificação visual e reprodução de imagens animadas |
+| **Limpeza automática** | Coleta periódica de itens expirados na lixeira (30 dias) via WorkManager |
 | **Contador de espaço** | Veja quanto espaço será liberado e quanto já foi liberado |
 | **Compartilhar** | Compartilhe mídias diretamente do app |
-| **Multi-seleção** | Selecione múltiplos itens nas fotos mantidas para ações em lote |
 
 ## Download
 
@@ -57,15 +58,16 @@ O **Deslize pra Limpar** é um aplicativo Android leve e eficiente para organiza
 
 | Detalhe | Valor |
 |---------|-------|
-| **Versão** | 1.0.13 (debug: 1.0.13-debug) |
+| **Versão** | 1.0.14 |
 | **SDK Mínimo** | Android 6.0 (API 23) |
 | **SDK Alvo** | Android 15 (API 37) |
 | **Idiomas** | Português (PT-BR) e Inglês |
-| **Linguagem** | Kotlin |
-| **Arquitetura** | MVC com Fragments |
-| **Banco de dados** | Room |
+| **Linguagem** | Kotlin 100% |
+| **Arquitetura** | **MVVM** (Model-View-ViewModel com Architecture Components) |
+| **Banco de dados** | Room com DAO patterns e migração segura |
 | **Carregamento de imagens** | Glide 5 |
 | **Tarefas em segundo plano** | WorkManager |
+| **Testes** | JUnit 4 |
 | **UI** | Material Design 3 (dark theme) |
 
 ---
@@ -74,7 +76,7 @@ O **Deslize pra Limpar** é um aplicativo Android leve e eficiente para organiza
 
 ### Pré-requisitos
 
-- [Android Studio](https://developer.android.com/studio) (versão mais recente recomendada)
+- [Android Studio](https://developer.android.com/studio) (versão recente recomendada)
 - [Java Development Kit (JDK) 17](https://openjdk.java.net/projects/jdk/17/) ou superior
 - [Git](https://git-scm.com/) para clonar o repositório
 
@@ -90,110 +92,74 @@ O **Deslize pra Limpar** é um aplicativo Android leve e eficiente para organiza
    - Inicie o Android Studio
    - Selecione "Open" e navegue até a pasta `android/` deste projeto
 
-3. **Configure o ambiente:**
-   - O projeto usa `compileSdk 37`, `minSdk 23`, `targetSdk 37`
-   - As dependências estão no `android/app/build.gradle`
-   - Certifique-se de ter o Android SDK instalado
-
-4. **Execute o aplicativo:**
+3. **Execute o aplicativo:**
    - Conecte um dispositivo Android via USB ou use um emulador
    - Clique no botão "Run" (▶️) no Android Studio
-   - Ou use o comando:
-     ```bash
-     cd android && ./gradlew installDebug
-     ```
+
+4. **Rodar testes unitários:**
+   ```bash
+   cd android && ./gradlew test
+   ```
 
 ### Estrutura do Código
 
 ```
-android/app/src/main/
-├── AndroidManifest.xml                    # Permissões e declaração de Activities
-├── java/com/lagando/deslize/
-│   ├── MainActivity.kt                   # Activity principal — navegação e permissões
-│   ├── SwipeFragment.kt                  # Tela principal — swipe para escolher
-│   ├── KeptFragment.kt                   # Grid de fotos mantidas
-│   ├── TrashFragment.kt                  # Lista de itens na lixeira
-│   ├── PhotoViewerActivity.kt            # Visualizador fullscreen de mídia
-│   ├── MyAppGlideModule.kt              # Configuração do Glide
-│   ├── model/
-│   │   └── MediaItem.kt                  # Modelo in-memory de mídia
-│   ├── data/
-│   │   ├── AppDatabase.kt               # Configuração do Room
-│   │   ├── MediaDao.kt                   # Queries do banco de dados
-│   │   └── MediaItemEntity.kt           # Entidade do Room
-│   ├── adapter/
-│   │   ├── KeptAdapter.kt              # RecyclerView adapter — grid de mantidas
-│   │   └── TrashAdapter.kt             # RecyclerView adapter — lista da lixeira
-│   └── worker/
-│       └── TrashCleanupWorker.kt        # WorkManager — limpeza automática
-└── res/
-    ├── layout/                           # Layouts XML das telas
-    ├── drawable/                         # Ícones vetoriais e backgrounds
-    ├── menu/                             # Menus de navegação e toolbar
-    ├── values/                           # Strings (EN), cores, temas
-    └── values-pt/                        # Strings em Português (PT-BR)
+android/app/src/
+├── test/java/com/lagando/deslize/
+│   └── AppUnitTest.kt                    # Testes unitários JUnit
+└── main/
+    ├── AndroidManifest.xml               # Permissões e Activities
+    ├── java/com/lagando/deslize/
+    │   ├── MainActivity.kt               # Navegação e permissões
+    │   ├── SwipeFragment.kt              # Tela de swipe (View)
+    │   ├── SwipeViewModel.kt             # Gestão de estado e LiveData (ViewModel)
+    │   ├── KeptFragment.kt               # Grid de mantidas
+    │   ├── TrashFragment.kt              # Lixeira com multi-seleção
+    │   ├── PhotoViewerActivity.kt        # Visualizador fullscreen
+    │   ├── MyAppGlideModule.kt           # Configuração do Glide
+    │   ├── model/
+    │   │   ├── MediaItem.kt              # Modelo de mídia com suporte a pastas
+    │   │   ├── UndoAction.kt             # Modelo de ação desfazer
+    │   │   └── Constants.kt              # Constantes MediaStatus e MediaType
+    │   ├── data/
+    │   │   ├── MediaRepository.kt        # Repositório de dados e MediaStore
+    │   │   ├── AppDatabase.kt            # Banco de dados Room
+    │   │   ├── MediaDao.kt               # Queries SQLite
+    │   │   ├── MediaItemEntity.kt        # Entidade de persistência
+    │   │   └── PrefsKeys.kt              # Chaves centralizadas de SharedPreferences
+    │   ├── util/
+    │   │   └── MediaUtils.kt             # Utilitário buildMediaUri
+    │   ├── adapter/
+    │   │   ├── KeptAdapter.kt            # Adapter com seleção em grid
+    │   │   └── TrashAdapter.kt           # Adapter da lixeira com multi-seleção
+    │   └── worker/
+    │       └── TrashCleanupWorker.kt     # WorkManager de expiração
+    └── res/                              # Layouts, drawables, menus e strings
 ```
-
-### Dependências Principais
-
-Definidas em `android/app/build.gradle`:
-
-| Biblioteca | Versão | Função |
-|-----------|--------|--------|
-| **AndroidX Core** | 1.19.0 | Extensões Kotlin para Android |
-| **Material** | 1.14.0 | Material Design 3 components |
-| **Room** | 2.8.4 | Banco de dados SQLite com ORM |
-| **Glide** | 5.0.9 | Carregamento e cache de imagens |
-| **WorkManager** | 2.11.2 | Tarefas em segundo plano |
-| **Coroutines** | 1.11.0 | Programação assíncrona |
 
 ### Configuração de Signing (Release)
 
 > **⚠️ Importante**: Nunca commite arquivos `.keystore` nem senhas no repositório.
 
-O projeto lê as credenciais de signing de properties do Gradle. Para configurar:
+O projeto lê as credenciais de assinatura de properties do Gradle. Configure em `~/.gradle/gradle.properties`:
+```properties
+RELEASE_STORE_FILE=caminho/para/seu/release.keystore
+RELEASE_STORE_PASSWORD=sua_senha
+RELEASE_KEY_ALIAS=seu_alias
+RELEASE_KEY_PASSWORD=sua_senha
+```
 
-1. **Crie ou edite `~/.gradle/gradle.properties`** (arquivo global, fora do repositório):
-   ```properties
-   RELEASE_STORE_FILE=caminho/para/seu/release.keystore
-   RELEASE_STORE_PASSWORD=sua_senha
-   RELEASE_KEY_ALIAS=seu_alias
-   RELEASE_KEY_PASSWORD=sua_senha
-   ```
+Build de Release:
+```bash
+cd android && ./gradlew assembleRelease
+```
 
-2. **Gerar um novo keystore** (se necessário):
-   ```bash
-   keytool -genkey -v -keystore release.keystore -alias release -keyalg RSA -keysize 2048 -validity 10000
-   ```
+---
 
-3. **Build de Release:**
-   ```bash
-   cd android && ./gradlew assembleRelease
-   ```
-   O APK assinado será gerado em `android/app/build/outputs/apk/release/`
+## 🤝 Contribuição e Changelog
 
-### Contribuição
-
-Contribuições são bem-vindas! Para contribuir:
-
-1. **Fork** o repositório no GitHub
-2. Crie um branch para sua feature: `git checkout -b feature/nova-funcionalidade`
-3. Commit suas mudanças: `git commit -m 'feat: adiciona nova funcionalidade'`
-4. Push para o branch: `git push origin feature/nova-funcionalidade`
-5. Abra um **Pull Request** descrevendo o que foi feito
-
-### 📝 Notas para Agentes de IA
-
-Se você está lendo este código como um agente de IA:
-
-- O projeto usa **MVC com Fragments** (sem ViewModel atualmente)
-- O banco de dados usa **Room** com DAO patterns para acesso a dados
-- O carregamento de imagens usa **Glide** com módulo personalizado (`MyAppGlideModule.kt`)
-- A lógica de permissão de mídia está em `MainActivity.kt` com suporte a Android 6-15
-- O worker de limpeza usa **WorkManager** periódico (1 dia, limpa itens com 30+ dias na lixeira)
-- O app solicita permissões: `READ_MEDIA_IMAGES`, `READ_MEDIA_VIDEO`, `POST_NOTIFICATIONS`, `INTERNET`
-- O design usa Material Design 3 com tema dark personalizado (`Theme.DeslizeLimpar`)
-- Senhas de signing **não estão no código** — são lidas de `gradle.properties`
+- Veja como contribuir no arquivo [CONTRIBUTING.md](CONTRIBUTING.md).
+- Veja o histórico de mudanças no arquivo [CHANGELOG.md](CHANGELOG.md).
 
 ## Licença
 

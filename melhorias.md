@@ -29,6 +29,14 @@
 
 ---
 
+## ✅ Fase 4 — Documentação & Governança (Concluída)
+- [x] **README.md**: Atualizado para refletir arquitetura MVVM, novas features, árvore de arquivos do projeto e testes.
+- [x] **CONTRIBUTING.md**: Guia completo de contribuição, padrões de código Kotlin, convenções de commits e testes.
+- [x] **CHANGELOG.md**: Histórico de versões seguindo o padrão *Keep a Changelog*.
+- [x] **Correção de Strings de Navegação**: Adicionadas `navigation_drawer_open` e `navigation_drawer_close` prevenindo falhas de build.
+
+---
+
 ## 🚀 Fase 5 — Features & Testes
 
 ### ✅ Já Implementadas:

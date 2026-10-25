@@ -130,4 +130,8 @@
         <item quantity="one">Restaurar %1$d item selecionado?</item>
         <item quantity="other">Restaurar %1$d itens selecionados?</item>
     </plurals>
+
+    <!-- Navigation Drawer -->
+    <string name="navigation_drawer_open">Abrir menu de navegação</string>
+    <string name="navigation_drawer_close">Fechar menu de navegação</string>
 </resources>

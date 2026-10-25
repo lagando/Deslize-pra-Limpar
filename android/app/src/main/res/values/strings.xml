@@ -126,4 +126,8 @@
         <item quantity="one">Restore %1$d selected item?</item>
         <item quantity="other">Restore %1$d selected items?</item>
     </plurals>
+
+    <!-- Navigation Drawer -->
+    <string name="navigation_drawer_open">Open navigation drawer</string>
+    <string name="navigation_drawer_close">Close navigation drawer</string>
 </resources>
