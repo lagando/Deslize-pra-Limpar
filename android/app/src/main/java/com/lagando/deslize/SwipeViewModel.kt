@@ -96,14 +96,17 @@ class SwipeViewModel(application: Application) : AndroidViewModel(application) {
 
         if (newRandomState) {
             remaining.shuffle()
+            // Garante que, se houver mais de 1 item, a foto visível mude imediatamente
+            if (remaining.size > 1 && remaining[0].id == currentItem.id) {
+                val swapIdx = kotlin.random.Random.nextInt(1, remaining.size)
+                val temp = remaining[0]
+                remaining[0] = remaining[swapIdx]
+                remaining[swapIdx] = temp
+            }
         } else {
-            // Restaura ordem por data
+            // Restaura ordem por data (mais recente primeiro)
             remaining.sortByDescending { it.dateAdded }
         }
-
-        // Mantém o item atual na frente
-        remaining.remove(currentItem)
-        remaining.add(0, currentItem)
 
         val newList = currentList.subList(0, currentIdx).toMutableList()
         newList.addAll(remaining)
@@ -122,7 +125,6 @@ class SwipeViewModel(application: Application) : AndroidViewModel(application) {
         val currentIdx = _currentIndex.value ?: 0
         if (currentIdx >= currentList.size) return
 
-        val currentItem = currentList[currentIdx]
         val remaining = currentList.subList(currentIdx, currentList.size).toMutableList()
 
         if (newSortState) {
@@ -132,10 +134,6 @@ class SwipeViewModel(application: Application) : AndroidViewModel(application) {
             // Mais recente primeiro
             remaining.sortByDescending { it.dateAdded }
         }
-
-        // Mantém o item atual na frente
-        remaining.remove(currentItem)
-        remaining.add(0, currentItem)
 
         val newList = currentList.subList(0, currentIdx).toMutableList()
         newList.addAll(remaining)

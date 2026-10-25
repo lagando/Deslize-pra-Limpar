@@ -53,7 +53,7 @@ class AppUnitTest {
 
     @Test
     fun testUndoActionModel() {
-        val uri = android.net.Uri.parse("content://media/external/images/media/123")
+        val uri = org.mockito.Mockito.mock(android.net.Uri::class.java)
         val item = MediaItem(
             id = 123L,
             contentUri = uri,
@@ -68,5 +68,35 @@ class AppUnitTest {
         assertEquals(123L, undo.item.id)
         assertEquals(MediaStatus.TRASHED, undo.status)
         assertEquals("Camera", undo.item.bucketName)
+    }
+
+    @Test
+    fun testSortBySizeOrdering() {
+        val uri = org.mockito.Mockito.mock(android.net.Uri::class.java)
+        val small = MediaItem(1L, uri, "small.jpg", 100L, 1000L, MediaType.IMAGE)
+        val medium = MediaItem(2L, uri, "med.jpg", 500L, 2000L, MediaType.IMAGE)
+        val large = MediaItem(3L, uri, "large.jpg", 9999L, 1500L, MediaType.IMAGE)
+
+        val list = mutableListOf(small, medium, large)
+        list.sortByDescending { it.size }
+
+        assertEquals(large.id, list[0].id)
+        assertEquals(medium.id, list[1].id)
+        assertEquals(small.id, list[2].id)
+    }
+
+    @Test
+    fun testSortByDateOrdering() {
+        val uri = org.mockito.Mockito.mock(android.net.Uri::class.java)
+        val old = MediaItem(1L, uri, "old.jpg", 9999L, 1000L, MediaType.IMAGE)
+        val mid = MediaItem(2L, uri, "mid.jpg", 500L, 2000L, MediaType.IMAGE)
+        val recent = MediaItem(3L, uri, "recent.jpg", 100L, 3000L, MediaType.IMAGE)
+
+        val list = mutableListOf(old, mid, recent)
+        list.sortByDescending { it.dateAdded }
+
+        assertEquals(recent.id, list[0].id)
+        assertEquals(mid.id, list[1].id)
+        assertEquals(old.id, list[2].id)
     }
 }

@@ -46,6 +46,10 @@ android {
     buildFeatures {
         viewBinding true
     }
+
+    testOptions {
+        unitTests.returnDefaultValues = true
+    }
 }
 
 kotlin {
@@ -84,4 +88,5 @@ dependencies {
 
     // Testing
     testImplementation 'junit:junit:4.13.2'
+    testImplementation 'org.mockito:mockito-core:5.11.0'
 }

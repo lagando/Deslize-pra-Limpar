@@ -171,11 +171,11 @@ class SwipeFragment : Fragment() {
         }
 
         viewModel.isRandomMode.observe(viewLifecycleOwner) { isRandom ->
-            randomMenuItem?.setIcon(if (isRandom) R.drawable.ic_sequential else R.drawable.ic_shuffle)
+            randomMenuItem?.icon?.mutate()?.alpha = if (isRandom) 255 else 120
         }
 
         viewModel.isSortBySizeMode.observe(viewLifecycleOwner) { isSort ->
-            sortBySizeMenuItem?.icon?.alpha = if (isSort) 255 else 120
+            sortBySizeMenuItem?.icon?.mutate()?.alpha = if (isSort) 255 else 120
         }
     }
 
@@ -256,10 +256,10 @@ class SwipeFragment : Fragment() {
                 undoMenuItem?.icon?.alpha = if (action != null) 255 else 77
 
                 val isRandom = viewModel.isRandomMode.value ?: false
-                randomMenuItem?.setIcon(if (isRandom) R.drawable.ic_sequential else R.drawable.ic_shuffle)
+                randomMenuItem?.icon?.mutate()?.alpha = if (isRandom) 255 else 120
 
                 val isSort = viewModel.isSortBySizeMode.value ?: false
-                sortBySizeMenuItem?.icon?.alpha = if (isSort) 255 else 120
+                sortBySizeMenuItem?.icon?.mutate()?.alpha = if (isSort) 255 else 120
             }
 
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {

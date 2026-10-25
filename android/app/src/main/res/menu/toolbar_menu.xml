@@ -6,17 +6,17 @@
         android:icon="@drawable/ic_undo"
         android:title="@string/toolbar_undo"
         android:enabled="false"
-        app:showAsAction="ifRoom" />
+        app:showAsAction="always" />
     <item
         android:id="@+id/action_sort_by_size"
         android:icon="@drawable/ic_sort_by_size"
         android:title="@string/sort_by_size"
-        app:showAsAction="ifRoom" />
+        app:showAsAction="always" />
     <item
         android:id="@+id/action_toggle_random"
         android:icon="@drawable/ic_shuffle"
         android:title="@string/toggle_random"
-        app:showAsAction="ifRoom" />
+        app:showAsAction="always" />
     <item
         android:id="@+id/action_filter_album"
         android:title="@string/filter_album"
