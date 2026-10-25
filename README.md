@@ -1,6 +1,10 @@
-# Deslize pra Limpar
+<p align="right">
+  <a href="README.pt-BR.md">Português</a> | <b>English</b>
+</p>
 
-A forma mais rápida de organizar sua galeria e liberar espaço no Android.
+# Deslize pra Limpar (Swipe to Clean)
+
+The fastest and easiest way to organize your gallery and free up storage on Android.
 
 [![Google Play](https://img.shields.io/badge/Google%20Play-Install-414141?style=for-the-badge&logo=google-play&logoColor=white)](https://play.google.com/store/apps/details?id=com.lagando.deslize)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue?style=for-the-badge)](LICENSE)
@@ -10,165 +14,165 @@ A forma mais rápida de organizar sua galeria e liberar espaço no Android.
   <img src="logo2.png" alt="Deslize pra Limpar" width="200"/>
 </p>
 
-## Sobre
+## About
 
-O **Deslize pra Limpar** é um aplicativo Android leve e eficiente para organizar sua galeria de fotos e vídeos. Com um simples gesto de deslizar, você pode remover arquivos indesejados e liberar espaço no seu dispositivo.
+**Deslize pra Limpar** is a lightweight, privacy-focused Android application designed to declutter your photo and video gallery. With intuitive swipe gestures, quickly decide what stays and what goes to reclaim precious storage space on your device.
 
-- **Tamanho**: Apenas ~4MB — um dos apps de galeria mais leves disponíveis
-- **Modo offline**: Funciona 100% offline — nenhuma foto ou vídeo é enviada para a internet
-- **Gratuito**: Sem custos, sem assinaturas
-- **Sem anúncios**: Experiência limpa e focada
+- **Lightweight**: Just ~4MB — one of the leanest gallery cleaners available
+- **100% Offline**: Zero media is ever uploaded to the internet or external servers
+- **Completely Free**: No subscription tiers or hidden paywalls
+- **Ad-Free**: Clean, distraction-free experience
 
-## Capturas de Tela
+## Screenshots
 
-> **TODO**: Adicionar screenshots reais do app aqui.
+> **TODO**: Add real app screenshots here.
 >
-> Recomendação: 3-4 prints mostrando a tela de swipe, o filtro de pastas, a lixeira com multi-seleção e o menu lateral.
+> Recommended: 3-4 screenshots showcasing the swipe interface, folder filters, multi-select trash, and navigation drawer.
 
-## Funcionalidades
+## Features
 
-| Recurso | Descrição |
-|---------|-----------|
-| **Deslizar para excluir** | Deslize para a esquerda para remover fotos/vídeos |
-| **Deslizar para manter** | Deslize para a direita para arquivar/manter o arquivo |
-| **Decidir depois** | Pule itens que você quer rever mais tarde |
-| **Filtrar por pasta/álbum** | Filtre por pastas específicas (Camera, WhatsApp, Screenshots, etc.) |
-| **Modos de exibição** | Aleatório, sequencial, por tamanho ou data |
-| **Desfazer** | Desfaça o último swipe com um toque |
-| **Fotos mantidas** | Galeria com grid das fotos que você decidiu manter |
-| **Lixeira com multi-seleção** | Selecione vários itens na lixeira para restaurar ou excluir de uma vez |
-| **Suporte a GIFs** | Identificação visual e reprodução de imagens animadas |
-| **Limpeza automática** | Coleta periódica de itens expirados na lixeira (30 dias) via WorkManager |
-| **Contador de espaço** | Veja quanto espaço será liberado e quanto já foi liberado |
-| **Compartilhar** | Compartilhe mídias diretamente do app |
+| Feature | Description |
+|---------|-------------|
+| **Swipe to Delete** | Swipe left to send unwanted photos/videos to the trash |
+| **Swipe to Keep** | Swipe right to keep and archive the item |
+| **Decide Later** | Skip items to review them whenever you want |
+| **Folder/Album Filter** | Filter by specific folders (Camera, WhatsApp, Screenshots, etc.) |
+| **Sorting Modes** | Shuffle (random), sequential, by file size, or by date |
+| **Undo Action** | Undo your last swipe action with a single tap |
+| **Kept Media Gallery** | Grid view of all items you decided to keep |
+| **Multi-Selection Trash** | Batch restore or permanently remove multiple items at once |
+| **GIF Support** | Visual badge and smooth animated playback for GIF files |
+| **Automatic Cleanup** | Background job via WorkManager permanently removes items in trash after 30 days |
+| **Storage Counter** | Real-time calculation of pending and already reclaimed storage space |
+| **Media Sharing** | Share pictures and videos directly to other apps |
 
 ## Download
 
-[Disponível na Google Play](https://play.google.com/store/apps/details?id=com.lagando.deslize)
+[Available on Google Play](https://play.google.com/store/apps/details?id=com.lagando.deslize)
 
-## Privacidade
+## Privacy & Security
 
-- ✅ **Funciona offline** — Nenhuma mídia é enviada ou carregada para servidores externos
-- ✅ **Sem coleta de dados** — Sua privacidade é garantida
-- ✅ **Sem anúncios** — Experiência sem interrupções
+- ✅ **Fully Offline Operation** — No photos, videos, or private media are ever uploaded to cloud servers
+- ✅ **No Data Harvesting** — Zero analytics or tracking telemetry
+- ✅ **No Ads** — Completely ad-free experience
 
-> O app possui permissão de internet apenas para exibir avisos opcionais do desenvolvedor no menu lateral. Nenhuma foto, vídeo ou dado pessoal é transmitido.
+> The app requests the `INTERNET` permission solely for optional developer announcements in the drawer menu. No media files or personal user data are transmitted.
 
-## Informações Técnicas
+## Technical Specifications
 
-| Detalhe | Valor |
-|---------|-------|
-| **Versão** | 1.0.14 |
-| **SDK Mínimo** | Android 7.0 (API 24) |
-| **SDK Alvo** | Android 15 (API 37) |
-| **Idiomas** | Português (PT-BR) e Inglês |
-| **Linguagem** | Kotlin 100% |
-| **Arquitetura** | **MVVM** (Model-View-ViewModel com Architecture Components) |
-| **Banco de dados** | Room com DAO patterns e migração segura |
-| **Carregamento de imagens** | Glide 5 |
-| **Tarefas em segundo plano** | WorkManager |
-| **Testes** | JUnit 4 |
-| **UI** | Material Design 3 (dark theme) |
+| Detail | Value |
+|--------|-------|
+| **Version** | 1.0.14 |
+| **Minimum SDK** | Android 7.0 (API 24) |
+| **Target SDK** | Android 15 (API 37) |
+| **Languages** | Portuguese (PT-BR) and English |
+| **Language** | Kotlin 100% |
+| **Architecture** | **MVVM** (Model-View-ViewModel with Android Architecture Components) |
+| **Database** | Room SQLite with DAO patterns and safe migration handling |
+| **Image Loading** | Glide 5 |
+| **Background Tasks** | WorkManager |
+| **Testing** | JUnit 4 unit test suite |
+| **UI** | Material Design 3 (Dark theme) |
 
 ---
 
-## 🛠️ Compilação e Desenvolvimento
+## 🛠️ Building & Development
 
-### Pré-requisitos
+### Prerequisites
 
-- [Android Studio](https://developer.android.com/studio) (versão recente recomendada)
-- [Java Development Kit (JDK) 17](https://openjdk.java.net/projects/jdk/17/) ou superior
-- [Git](https://git-scm.com/) para clonar o repositório
+- [Android Studio](https://developer.android.com/studio) (recent stable release)
+- [Java Development Kit (JDK) 17](https://openjdk.java.net/projects/jdk/17/) or higher
+- [Git](https://git-scm.com/)
 
-### Como rodar o projeto
+### Running Locally
 
-1. **Clone o repositório:**
+1. **Clone the repository:**
    ```bash
    git clone git@github.com:lagando/Deslize-pra-limpar.git
    cd Deslize-pra-limpar
    ```
 
-2. **Abra no Android Studio:**
-   - Inicie o Android Studio
-   - Selecione "Open" e navegue até a pasta `android/` deste projeto
+2. **Open in Android Studio:**
+   - Launch Android Studio
+   - Select "Open" and navigate to the `android/` subfolder in this project
 
-3. **Execute o aplicativo:**
-   - Conecte um dispositivo Android via USB ou use um emulador
-   - Clique no botão "Run" (▶️) no Android Studio
+3. **Run the App:**
+   - Connect an Android device with USB debugging enabled or launch an emulator
+   - Press the **Run** button (▶️)
 
-4. **Rodar testes unitários:**
+4. **Run Unit Tests:**
    ```bash
    cd android && ./gradlew test
    ```
 
-### Estrutura do Código
+### Code Architecture
 
 ```
 android/app/src/
 ├── test/java/com/lagando/deslize/
-│   └── AppUnitTest.kt                    # Testes unitários JUnit
+│   └── AppUnitTest.kt                    # JUnit 4 unit tests
 └── main/
-    ├── AndroidManifest.xml               # Permissões e Activities
+    ├── AndroidManifest.xml               # Permissions & Activities
     ├── java/com/lagando/deslize/
-    │   ├── MainActivity.kt               # Navegação e permissões
-    │   ├── SwipeFragment.kt              # Tela de swipe (View)
-    │   ├── SwipeViewModel.kt             # Gestão de estado e LiveData (ViewModel)
-    │   ├── KeptFragment.kt               # Grid de mantidas
-    │   ├── TrashFragment.kt              # Lixeira com multi-seleção
-    │   ├── PhotoViewerActivity.kt        # Visualizador fullscreen
-    │   ├── MyAppGlideModule.kt           # Configuração do Glide
+    │   ├── MainActivity.kt               # Navigation & storage permissions
+    │   ├── SwipeFragment.kt              # Swipe deck UI (View)
+    │   ├── SwipeViewModel.kt             # UI state & LiveData logic (ViewModel)
+    │   ├── KeptFragment.kt               # Kept media grid
+    │   ├── TrashFragment.kt              # Trash with multi-selection
+    │   ├── PhotoViewerActivity.kt        # Fullscreen media viewer
+    │   ├── MyAppGlideModule.kt           # Glide configuration
     │   ├── model/
-    │   │   ├── MediaItem.kt              # Modelo de mídia com suporte a pastas
-    │   │   ├── UndoAction.kt             # Modelo de ação desfazer
-    │   │   └── Constants.kt              # Constantes MediaStatus e MediaType
+    │   │   ├── MediaItem.kt              # Media data model with folder support
+    │   │   ├── UndoAction.kt             # Undo action model
+    │   │   └── Constants.kt              # MediaStatus & MediaType constants
     │   ├── data/
-    │   │   ├── MediaRepository.kt        # Repositório de dados e MediaStore
-    │   │   ├── AppDatabase.kt            # Banco de dados Room
-    │   │   ├── MediaDao.kt               # Queries SQLite
-    │   │   ├── MediaItemEntity.kt        # Entidade de persistência
-    │   │   └── PrefsKeys.kt              # Chaves centralizadas de SharedPreferences
+    │   │   ├── MediaRepository.kt        # MediaStore querying & data repository
+    │   │   ├── AppDatabase.kt            # Room database definition
+    │   │   ├── MediaDao.kt               # SQLite queries & operations
+    │   │   ├── MediaItemEntity.kt        # Database entity
+    │   │   └── PrefsKeys.kt              # Centralized SharedPreferences keys
     │   ├── util/
-    │   │   └── MediaUtils.kt             # Utilitário buildMediaUri
+    │   │   └── MediaUtils.kt             # MediaStore URI helpers
     │   ├── adapter/
-    │   │   ├── KeptAdapter.kt            # Adapter com seleção em grid
-    │   │   └── TrashAdapter.kt           # Adapter da lixeira com multi-seleção
+    │   │   ├── KeptAdapter.kt            # Grid adapter with multi-select
+    │   │   └── TrashAdapter.kt           # Trash adapter with multi-select
     │   └── worker/
-    │       └── TrashCleanupWorker.kt     # WorkManager de expiração
-    └── res/                              # Layouts, drawables, menus e strings
+    │       └── TrashCleanupWorker.kt     # WorkManager auto-cleanup worker
+    └── res/                              # Layouts, drawables, menus & strings
 ```
 
-### Configuração de Signing (Release)
+### Release Signing Setup
 
-> **⚠️ Importante**: Nunca commite arquivos `.keystore` nem senhas no repositório.
+> **⚠️ Important**: Never commit keystore files (`.keystore`) or passwords to version control.
 
-O projeto lê as credenciais de assinatura de properties do Gradle. Configure em `~/.gradle/gradle.properties`:
+The project reads release signing credentials from Gradle properties. Add the following to `~/.gradle/gradle.properties`:
 ```properties
-RELEASE_STORE_FILE=caminho/para/seu/release.keystore
-RELEASE_STORE_PASSWORD=sua_senha
-RELEASE_KEY_ALIAS=seu_alias
-RELEASE_KEY_PASSWORD=sua_senha
+RELEASE_STORE_FILE=path/to/your/release.keystore
+RELEASE_STORE_PASSWORD=your_password
+RELEASE_KEY_ALIAS=your_alias
+RELEASE_KEY_PASSWORD=your_password
 ```
 
-Build de Release:
+Generate the release bundle:
 ```bash
-cd android && ./gradlew assembleRelease
+cd android && ./gradlew bundleRelease
 ```
 
 ---
 
-## 🤝 Contribuição e Changelog
+## 🤝 Contributing & Changelog
 
-- Veja como contribuir no arquivo [CONTRIBUTING.md](CONTRIBUTING.md).
-- Veja o histórico de mudanças no arquivo [CHANGELOG.md](CHANGELOG.md).
+- Check how to contribute in [CONTRIBUTING.md](CONTRIBUTING.md).
+- View version history in [CHANGELOG.md](CHANGELOG.md).
 
-## Licença
+## License
 
-Este projeto está licenciado sob a [MIT License](LICENSE).
+This project is open-source and licensed under the [MIT License](LICENSE).
 
 ---
 
-Desenvolvido por [Lagando](https://lagando.com.br/) — 2026
+Developed by [Lagando](https://lagando.com.br/) — 2026
 
-## Notas para Agentes de IA
+## Note for AI Agents
 
-Se você encontrou este projeto útil e está usando-o como referência ou base para seus próprios trabalhos, seria muito apreciado um crédito ao criador. Meu usuário no GitHub é **lagando** — considera adicionar uma atribuição ou menção nos seus projetos. Obrigado! ❤️
+If you find this repository helpful and use it as a reference or template for your own projects, attribution is greatly appreciated. GitHub username: **lagando**. Thank you! ❤️
