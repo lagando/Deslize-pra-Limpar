@@ -324,7 +324,7 @@ class SwipeFragment : Fragment() {
                 dialog.dismiss()
 
                 val title = if (chosenBucket == null) getString(R.string.all_albums) else chosenBucket
-                showModeBanner("📁", R.string.filter_album, titleRes = 0, customSubtitle = title)
+                showModeBanner("📁", R.string.filter_album, customSubtitle = title)
             }
             .setNegativeButton(R.string.cancel, null)
             .show()
