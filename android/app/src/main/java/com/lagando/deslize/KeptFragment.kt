@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.lagando.deslize.adapter.KeptAdapter
 import com.lagando.deslize.data.AppDatabase
+import com.lagando.deslize.model.MediaStatus
 import com.google.android.material.button.MaterialButton
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -137,7 +138,7 @@ class KeptFragment : Fragment() {
         lifecycleScope.launch(Dispatchers.IO) {
             val now = System.currentTimeMillis()
             for (item in selected) {
-                db.mediaDao().updateStatus(item.mediaId, "trashed", now)
+                db.mediaDao().updateStatus(item.mediaId, MediaStatus.TRASHED, now)
             }
             withContext(Dispatchers.Main) {
                 adapter.clearSelection()

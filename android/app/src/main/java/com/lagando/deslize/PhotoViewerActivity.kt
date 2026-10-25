@@ -17,6 +17,7 @@ import androidx.core.view.updatePadding
 import androidx.core.view.isVisible
 import androidx.core.net.toUri
 import com.bumptech.glide.Glide
+import com.lagando.deslize.model.MediaType
 
 /**
  * Full-screen photo/video viewer activity.
@@ -47,7 +48,7 @@ class PhotoViewerActivity : AppCompatActivity() {
             return
         }
         val mediaUri = mediaUriString.toUri()
-        val mediaType = intent.getStringExtra(EXTRA_MEDIA_TYPE) ?: "image"
+        val mediaType = intent.getStringExtra(EXTRA_MEDIA_TYPE) ?: MediaType.IMAGE
         val displayName = intent.getStringExtra(EXTRA_DISPLAY_NAME) ?: ""
 
         val screenWidth = resources.displayMetrics.widthPixels
@@ -64,7 +65,7 @@ class PhotoViewerActivity : AppCompatActivity() {
         // Show filename at the bottom
         tvFileName.text = displayName
 
-        if (mediaType == "video") {
+        if (mediaType == MediaType.VIDEO) {
             // For videos: show thumbnail + play button
             ivFullImage.visibility = View.GONE
             ivVideoThumb.visibility = View.VISIBLE
@@ -105,7 +106,7 @@ class PhotoViewerActivity : AppCompatActivity() {
 
         // Share button - opens Android share sheet
         btnShare.setOnClickListener {
-            val mimeType = if (mediaType == "video") "video/*" else "image/*"
+            val mimeType = if (mediaType == MediaType.VIDEO) "video/*" else "image/*"
             val shareIntent = Intent(Intent.ACTION_SEND).apply {
                 type = mimeType
                 putExtra(Intent.EXTRA_STREAM, mediaUri)
@@ -117,7 +118,7 @@ class PhotoViewerActivity : AppCompatActivity() {
 
         // Open with button - opens in external gallery/viewer app
         btnOpenWith.setOnClickListener {
-            val mimeType = if (mediaType == "video") "video/*" else "image/*"
+            val mimeType = if (mediaType == MediaType.VIDEO) "video/*" else "image/*"
             openWithExternalApp(mediaUri, mimeType)
         }
 
@@ -137,7 +138,7 @@ class PhotoViewerActivity : AppCompatActivity() {
             windowInsets
         }
 
-        val clickTarget = if (mediaType == "video") ivVideoThumb else ivFullImage
+        val clickTarget = if (mediaType == MediaType.VIDEO) ivVideoThumb else ivFullImage
         clickTarget.setOnClickListener {
             val newVisibility = if (topBar.isVisible) View.GONE else View.VISIBLE
             topBar.visibility = newVisibility

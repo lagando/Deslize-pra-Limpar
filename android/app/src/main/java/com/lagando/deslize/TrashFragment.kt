@@ -1,7 +1,6 @@
 package com.lagando.deslize
 
 import android.app.Activity
-import android.content.ContentUris
 import android.os.Build
 import android.os.Bundle
 import android.provider.MediaStore
@@ -22,6 +21,9 @@ import androidx.recyclerview.widget.RecyclerView
 import com.lagando.deslize.adapter.TrashAdapter
 import com.lagando.deslize.data.AppDatabase
 import com.lagando.deslize.data.MediaItemEntity
+import com.lagando.deslize.data.PrefsKeys
+import com.lagando.deslize.model.MediaStatus
+import com.lagando.deslize.util.buildMediaUri
 import com.google.android.material.button.MaterialButton
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -61,9 +63,9 @@ class TrashFragment : Fragment() {
                     db.mediaDao().delete(item.mediaId)
                 }
                 if (totalFreed > 0) {
-                    val prefs = requireContext().getSharedPreferences("deslize_prefs", android.content.Context.MODE_PRIVATE)
-                    val currentFreed = prefs.getLong("total_space_freed", 0L)
-                    prefs.edit { putLong("total_space_freed", currentFreed + totalFreed) }
+                    val prefs = requireContext().getSharedPreferences(PrefsKeys.PREFS_NAME, android.content.Context.MODE_PRIVATE)
+                    val currentFreed = prefs.getLong(PrefsKeys.TOTAL_SPACE_FREED, 0L)
+                    prefs.edit { putLong(PrefsKeys.TOTAL_SPACE_FREED, currentFreed + totalFreed) }
                 }
                 withContext(Dispatchers.Main) {
                     loadTrashItems()
@@ -141,7 +143,7 @@ class TrashFragment : Fragment() {
 
     private fun restoreItem(item: MediaItemEntity) {
         lifecycleScope.launch(Dispatchers.IO) {
-            db.mediaDao().updateStatus(item.mediaId, "kept", null)
+            db.mediaDao().updateStatus(item.mediaId, MediaStatus.KEPT, null)
             withContext(Dispatchers.Main) {
                 loadTrashItems()
                 (activity as? MainActivity)?.updateTrashBadge()
@@ -167,15 +169,7 @@ class TrashFragment : Fragment() {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
                 // Android 11+: Use createDeleteRequest for batch deletion
                 val uris = trashedItems.map { item ->
-                    if (item.mediaType == "video") {
-                        ContentUris.withAppendedId(
-                            MediaStore.Video.Media.EXTERNAL_CONTENT_URI, item.mediaId
-                        )
-                    } else {
-                        ContentUris.withAppendedId(
-                            MediaStore.Images.Media.EXTERNAL_CONTENT_URI, item.mediaId
-                        )
-                    }
+                    buildMediaUri(item.mediaId, item.mediaType)
                 }
 
                 withContext(Dispatchers.Main) {
@@ -203,15 +197,7 @@ class TrashFragment : Fragment() {
                 var totalFreed = 0L
                 for (item in trashedItems) {
                     try {
-                        val uri = if (item.mediaType == "video") {
-                            ContentUris.withAppendedId(
-                                MediaStore.Video.Media.EXTERNAL_CONTENT_URI, item.mediaId
-                            )
-                        } else {
-                            ContentUris.withAppendedId(
-                                MediaStore.Images.Media.EXTERNAL_CONTENT_URI, item.mediaId
-                            )
-                        }
+                        val uri = buildMediaUri(item.mediaId, item.mediaType)
                         requireContext().contentResolver.delete(uri, null, null)
                         totalFreed += item.fileSize
                     } catch (e: Exception) {
@@ -220,9 +206,9 @@ class TrashFragment : Fragment() {
                     db.mediaDao().delete(item.mediaId)
                 }
                 if (totalFreed > 0) {
-                    val prefs = requireContext().getSharedPreferences("deslize_prefs", android.content.Context.MODE_PRIVATE)
-                    val currentFreed = prefs.getLong("total_space_freed", 0L)
-                    prefs.edit { putLong("total_space_freed", currentFreed + totalFreed) }
+                    val prefs = requireContext().getSharedPreferences(PrefsKeys.PREFS_NAME, android.content.Context.MODE_PRIVATE)
+                    val currentFreed = prefs.getLong(PrefsKeys.TOTAL_SPACE_FREED, 0L)
+                    prefs.edit { putLong(PrefsKeys.TOTAL_SPACE_FREED, currentFreed + totalFreed) }
                 }
                 withContext(Dispatchers.Main) {
                     loadTrashItems()

@@ -29,7 +29,10 @@ import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
 import com.lagando.deslize.data.AppDatabase
 import com.lagando.deslize.data.MediaItemEntity
+import com.lagando.deslize.data.PrefsKeys
 import com.lagando.deslize.model.MediaItem
+import com.lagando.deslize.model.MediaStatus
+import com.lagando.deslize.model.MediaType
 import com.google.android.material.button.MaterialButton
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -191,7 +194,7 @@ class SwipeFragment : Fragment() {
         playButton.setOnClickListener {
             if (!isAnimating && currentIndex < mediaItems.size) {
                 val item = mediaItems[currentIndex]
-                if (item.mediaType == "video") {
+                if (item.mediaType == MediaType.VIDEO) {
                     val intent = android.content.Intent(android.content.Intent.ACTION_VIEW)
                     intent.setDataAndType(item.contentUri, "video/*")
                     intent.addFlags(android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION)
@@ -202,7 +205,7 @@ class SwipeFragment : Fragment() {
         btnShareMedia.setOnClickListener {
             if (currentIndex < mediaItems.size) {
                 val item = mediaItems[currentIndex]
-                val mimeType = if (item.mediaType == "video") "video/*" else "image/*"
+                val mimeType = if (item.mediaType == MediaType.VIDEO) "video/*" else "image/*"
                 val promoText = if (isRandomMode) {
                     getString(R.string.share_promo_text_random)
                 } else {
@@ -400,7 +403,7 @@ class SwipeFragment : Fragment() {
                 showMedia(action.item)
                 updateCounter()
                 // Update badge if we undid a trash action
-                if (action.status == "trashed") {
+                if (action.status == MediaStatus.TRASHED) {
                     (activity as? MainActivity)?.updateTrashBadge()
                 }
             }
@@ -512,7 +515,7 @@ class SwipeFragment : Fragment() {
                 MediaItemEntity(
                     mediaId = item.id,
                     mediaUri = item.contentUri.toString(),
-                    status = "trashed",
+                    status = MediaStatus.TRASHED,
                     trashedDate = System.currentTimeMillis(),
                     fileSize = item.size,
                     mediaType = item.mediaType,
@@ -521,7 +524,7 @@ class SwipeFragment : Fragment() {
             )
             withContext(Dispatchers.Main) {
                 // Save undo state before removing
-                lastAction = UndoAction(item, "trashed")
+                lastAction = UndoAction(item, MediaStatus.TRASHED)
                 updateUndoButton()
                 // Remove the item from the list since it's been reviewed
                 mediaItems.removeAt(currentIndex)
@@ -540,7 +543,7 @@ class SwipeFragment : Fragment() {
                 MediaItemEntity(
                     mediaId = item.id,
                     mediaUri = item.contentUri.toString(),
-                    status = "kept",
+                    status = MediaStatus.KEPT,
                     fileSize = item.size,
                     mediaType = item.mediaType,
                     displayName = item.displayName
@@ -548,7 +551,7 @@ class SwipeFragment : Fragment() {
             )
             withContext(Dispatchers.Main) {
                 // Save undo state before removing
-                lastAction = UndoAction(item, "kept")
+                lastAction = UndoAction(item, MediaStatus.KEPT)
                 updateUndoButton()
                 // Remove the item from the list since it's been reviewed
                 mediaItems.removeAt(currentIndex)
@@ -658,7 +661,7 @@ class SwipeFragment : Fragment() {
     }
 
     private fun showMedia(item: MediaItem) {
-        if (item.mediaType == "video") {
+        if (item.mediaType == MediaType.VIDEO) {
             imageView.visibility = View.GONE
             videoThumbnail.visibility = View.VISIBLE
             playButton.visibility = View.VISIBLE
@@ -781,9 +784,9 @@ class SwipeFragment : Fragment() {
         val act = activity ?: return
 
         // Mark that we've attempted to request permission
-        val prefs = act.getSharedPreferences("deslize_prefs", android.content.Context.MODE_PRIVATE)
-        val alreadyRequested = prefs.getBoolean("permission_requested", false)
-        prefs.edit().putBoolean("permission_requested", true).apply()
+        val prefs = act.getSharedPreferences(PrefsKeys.PREFS_NAME, android.content.Context.MODE_PRIVATE)
+        val alreadyRequested = prefs.getBoolean(PrefsKeys.PERMISSION_REQUESTED, false)
+        prefs.edit().putBoolean(PrefsKeys.PERMISSION_REQUESTED, true).apply()
 
         if (isPermissionPermanentlyDenied() && alreadyRequested) {
             // Permission permanently denied — open app settings
@@ -855,10 +858,10 @@ class SwipeFragment : Fragment() {
                             MediaItem(
                                 id = id,
                                 contentUri = uri,
-                                displayName = name ?: (context?.getString(R.string.unknown_filename) ?: "unknown"),
+                                displayName = name ?: context.getString(R.string.unknown_filename),
                                 size = if (sizeCol != -1) cursor.getLong(sizeCol) else 0L,
                                 dateAdded = if (dateCol != -1) cursor.getLong(dateCol) else System.currentTimeMillis() / 1000,
-                                mediaType = "image"
+                                mediaType = MediaType.IMAGE
                             )
                         )
                     } catch (e: Exception) {
@@ -902,10 +905,10 @@ class SwipeFragment : Fragment() {
                             MediaItem(
                                 id = id,
                                 contentUri = uri,
-                                displayName = name ?: (context?.getString(R.string.unknown_filename) ?: "unknown"),
+                                displayName = name ?: context.getString(R.string.unknown_filename),
                                 size = if (sizeCol != -1) cursor.getLong(sizeCol) else 0L,
                                 dateAdded = if (dateCol != -1) cursor.getLong(dateCol) else System.currentTimeMillis() / 1000,
-                                mediaType = "video",
+                                mediaType = MediaType.VIDEO,
                                 duration = if (durCol != -1) cursor.getLong(durCol) else 0L
                             )
                         )

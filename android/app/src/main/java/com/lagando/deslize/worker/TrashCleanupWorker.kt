@@ -1,14 +1,14 @@
 package com.lagando.deslize.worker
 
-import android.content.ContentUris
 import android.content.Context
 import android.os.Build
-import android.provider.MediaStore
 import android.util.Log
 import androidx.core.content.edit
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.lagando.deslize.data.AppDatabase
+import com.lagando.deslize.data.PrefsKeys
+import com.lagando.deslize.util.buildMediaUri
 import com.lagando.deslize.R
 
 /**
@@ -43,23 +43,15 @@ class TrashCleanupWorker(
             for (item in expiredItems) {
                 try {
                     // Try to delete the actual file from device
-                    val uri = if (item.mediaType == "video") {
-                        ContentUris.withAppendedId(
-                            MediaStore.Video.Media.EXTERNAL_CONTENT_URI, item.mediaId
-                        )
-                    } else {
-                        ContentUris.withAppendedId(
-                            MediaStore.Images.Media.EXTERNAL_CONTENT_URI, item.mediaId
-                        )
-                    }
+                    val uri = buildMediaUri(item.mediaId, item.mediaType)
 
                     // On Android 10 and below, we can delete directly
                     if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.Q) {
                         applicationContext.contentResolver.delete(uri, null, null)
                         db.mediaDao().delete(item.mediaId)
-                        val prefs = applicationContext.getSharedPreferences("deslize_prefs", Context.MODE_PRIVATE)
-                        val currentFreed = prefs.getLong("total_space_freed", 0L)
-                        prefs.edit { putLong("total_space_freed", currentFreed + item.fileSize) }
+                        val prefs = applicationContext.getSharedPreferences(PrefsKeys.PREFS_NAME, Context.MODE_PRIVATE)
+                        val currentFreed = prefs.getLong(PrefsKeys.TOTAL_SPACE_FREED, 0L)
+                        prefs.edit { putLong(PrefsKeys.TOTAL_SPACE_FREED, currentFreed + item.fileSize) }
                         Log.d(TAG, "Cleaned up: ${item.displayName}")
                     } else {
                         // On Android 11+, background file deletion may fail silently or throw.

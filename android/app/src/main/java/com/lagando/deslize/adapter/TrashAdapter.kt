@@ -1,7 +1,5 @@
 package com.lagando.deslize.adapter
 
-import android.content.ContentUris
-import android.provider.MediaStore
 import android.text.format.Formatter
 import android.view.LayoutInflater
 import android.view.View
@@ -13,6 +11,7 @@ import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
 import com.lagando.deslize.R
 import com.lagando.deslize.data.MediaItemEntity
+import com.lagando.deslize.util.buildMediaUri
 import java.util.concurrent.TimeUnit
 
 /**
@@ -43,11 +42,7 @@ class TrashAdapter(
         val context = holder.itemView.context
 
         // Load thumbnail
-        val contentUri = if (item.mediaType == "video") {
-            ContentUris.withAppendedId(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, item.mediaId)
-        } else {
-            ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, item.mediaId)
-        }
+        val contentUri = buildMediaUri(item.mediaId, item.mediaType)
 
         Glide.with(context)
             .load(contentUri)

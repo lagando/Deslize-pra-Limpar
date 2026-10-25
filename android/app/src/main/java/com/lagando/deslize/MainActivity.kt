@@ -30,6 +30,7 @@ import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import com.lagando.deslize.data.AppDatabase
+import com.lagando.deslize.data.PrefsKeys
 import com.lagando.deslize.worker.TrashCleanupWorker
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.navigation.NavigationView
@@ -265,8 +266,8 @@ class MainActivity : AppCompatActivity() {
     private fun updateSpaceCounter() {
         lifecycleScope.launch(Dispatchers.IO) {
             val totalSize = db.mediaDao().getTotalTrashSize()
-            val prefs = getSharedPreferences("deslize_prefs", MODE_PRIVATE)
-            val totalFreed = prefs.getLong("total_space_freed", 0L)
+            val prefs = getSharedPreferences(PrefsKeys.PREFS_NAME, MODE_PRIVATE)
+            val totalFreed = prefs.getLong(PrefsKeys.TOTAL_SPACE_FREED, 0L)
             withContext(Dispatchers.Main) {
                 val spaceItem = navigationView.menu.findItem(R.id.nav_space_counter)
                 if (totalSize > 0) {
@@ -463,8 +464,8 @@ class MainActivity : AppCompatActivity() {
      * Uses SharedPreferences to track whether the tutorial has been shown.
      */
     private fun showTutorialIfFirstLaunch() {
-        val prefs = getSharedPreferences("deslize_prefs", MODE_PRIVATE)
-        if (prefs.getBoolean("tutorial_shown", false)) return
+        val prefs = getSharedPreferences(PrefsKeys.PREFS_NAME, MODE_PRIVATE)
+        if (prefs.getBoolean(PrefsKeys.TUTORIAL_SHOWN, false)) return
 
         AlertDialog.Builder(this)
             .setTitle(R.string.tutorial_title)
@@ -475,7 +476,7 @@ class MainActivity : AppCompatActivity() {
             .setCancelable(false)
             .show()
 
-        prefs.edit { putBoolean("tutorial_shown", true) }
+        prefs.edit { putBoolean(PrefsKeys.TUTORIAL_SHOWN, true) }
     }
 
     companion object {
