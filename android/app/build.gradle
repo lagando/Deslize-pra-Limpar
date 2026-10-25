@@ -11,8 +11,8 @@ android {
         applicationId "com.lagando.deslize"
         minSdk 23
         targetSdk 37
-        versionCode 13
-        versionName "1.0.13"
+        versionCode 14
+        versionName "1.0.14"
         resConfigs "en", "pt"
     }
 

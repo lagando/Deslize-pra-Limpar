@@ -48,7 +48,7 @@
     <string name="made_by_lagando">Made by Lagando</string>
     <string name="website_url_display">lagando.com.br</string>
     <string name="website_url">https://lagando.com.br/</string>
-    <string name="version_label">v1.0.13</string>
+    <string name="version_label">v1.0.14</string>
     <string name="menu_kept">Kept Photos</string>
     <plurals name="kept_count">
         <item quantity="one">%1$d kept photo</item>
