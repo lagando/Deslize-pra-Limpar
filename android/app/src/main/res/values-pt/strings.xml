@@ -120,4 +120,14 @@
         <item quantity="one">Devolver %1$d item para a tela de swipe?</item>
         <item quantity="other">Devolver %1$d itens para a tela de swipe?</item>
     </plurals>
+
+    <!-- Filtro de Pastas & Seleção Múltipla na Lixeira -->
+    <string name="filter_album">Filtrar por pasta</string>
+    <string name="all_albums">Todas as pastas</string>
+    <string name="album_filtered_format">Pasta: %1$s</string>
+    <string name="btn_restore_selected">Restaurar</string>
+    <plurals name="confirm_restore_selected">
+        <item quantity="one">Restaurar %1$d item selecionado?</item>
+        <item quantity="other">Restaurar %1$d itens selecionados?</item>
+    </plurals>
 </resources>

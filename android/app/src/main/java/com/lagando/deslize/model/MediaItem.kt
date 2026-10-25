@@ -13,5 +13,6 @@ data class MediaItem(
     val size: Long,                  // File size in bytes
     val dateAdded: Long,             // Date added timestamp
     val mediaType: String,           // "image" or "video"
-    val duration: Long = 0           // Duration in ms (for videos)
+    val duration: Long = 0,          // Duration in ms (for videos)
+    val bucketName: String = ""      // Folder/Album name (e.g. Camera, WhatsApp)
 )

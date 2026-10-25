@@ -30,15 +30,23 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 /**
- * Fragment for viewing and managing trashed media items.
- * Shows a list of items marked for deletion with options to restore or permanently delete.
- * Displays total space that can be freed and item count.
+ * Fragment para gerenciar itens na lixeira.
+ * Permite restaurar individualmente, esvaziar tudo ou fazer seleção múltipla
+ * para restaurar ou excluir permanentemente itens selecionados.
  */
 class TrashFragment : Fragment() {
 
     private lateinit var db: AppDatabase
     private lateinit var adapter: TrashAdapter
 
+    // Selection Bar
+    private lateinit var trashSelectionBar: LinearLayout
+    private lateinit var btnCancelTrashSelection: MaterialButton
+    private lateinit var tvTrashSelectionCount: TextView
+    private lateinit var btnRestoreSelected: MaterialButton
+    private lateinit var btnDeleteSelected: MaterialButton
+
+    // Header & List
     private lateinit var trashHeader: LinearLayout
     private lateinit var tvTrashCount: TextView
     private lateinit var tvTrashSize: TextView
@@ -46,34 +54,35 @@ class TrashFragment : Fragment() {
     private lateinit var recyclerTrash: RecyclerView
     private lateinit var emptyTrashView: LinearLayout
 
-    /**
-     * Modern replacement for deprecated startIntentSenderForResult/onActivityResult.
-     * Handles the result of MediaStore.createDeleteRequest() on Android 11+.
-     */
+    private var pendingDeleteItems: List<MediaItemEntity>? = null
+
     private val deleteRequestLauncher = registerForActivityResult(
         ActivityResultContracts.StartIntentSenderForResult()
     ) { result ->
         if (result.resultCode == Activity.RESULT_OK) {
-            // User confirmed deletion - remove items from our DB and track freed space
             lifecycleScope.launch(Dispatchers.IO) {
-                val trashedItems = db.mediaDao().getTrashedItems()
+                val itemsToRemove = pendingDeleteItems ?: db.mediaDao().getTrashedItems()
                 var totalFreed = 0L
-                for (item in trashedItems) {
+                for (item in itemsToRemove) {
                     totalFreed += item.fileSize
                     db.mediaDao().delete(item.mediaId)
                 }
+                pendingDeleteItems = null
+
                 if (totalFreed > 0) {
                     val prefs = requireContext().getSharedPreferences(PrefsKeys.PREFS_NAME, android.content.Context.MODE_PRIVATE)
                     val currentFreed = prefs.getLong(PrefsKeys.TOTAL_SPACE_FREED, 0L)
                     prefs.edit { putLong(PrefsKeys.TOTAL_SPACE_FREED, currentFreed + totalFreed) }
                 }
                 withContext(Dispatchers.Main) {
+                    adapter.clearSelection()
                     loadTrashItems()
                     (activity as? MainActivity)?.updateTrashBadge()
                 }
             }
+        } else {
+            pendingDeleteItems = null
         }
-        // If user denied, items stay in trash
     }
 
     override fun onCreateView(
@@ -92,6 +101,12 @@ class TrashFragment : Fragment() {
     }
 
     private fun bindViews(view: View) {
+        trashSelectionBar = view.findViewById(R.id.trashSelectionBar)
+        btnCancelTrashSelection = view.findViewById(R.id.btnCancelTrashSelection)
+        tvTrashSelectionCount = view.findViewById(R.id.tvTrashSelectionCount)
+        btnRestoreSelected = view.findViewById(R.id.btnRestoreSelected)
+        btnDeleteSelected = view.findViewById(R.id.btnDeleteSelected)
+
         trashHeader = view.findViewById(R.id.trashHeader)
         tvTrashCount = view.findViewById(R.id.tvTrashCount)
         tvTrashSize = view.findViewById(R.id.tvTrashSize)
@@ -101,9 +116,11 @@ class TrashFragment : Fragment() {
     }
 
     private fun setupRecyclerView() {
-        adapter = TrashAdapter(mutableListOf()) { item ->
-            restoreItem(item)
-        }
+        adapter = TrashAdapter(
+            items = mutableListOf(),
+            onRestore = { item -> restoreItem(item) },
+            onSelectionChanged = { count -> updateSelectionUI(count) }
+        )
         recyclerTrash.layoutManager = LinearLayoutManager(requireContext())
         recyclerTrash.adapter = adapter
     }
@@ -111,6 +128,37 @@ class TrashFragment : Fragment() {
     private fun setupButtons() {
         btnEmptyTrash.setOnClickListener {
             showEmptyTrashConfirmation()
+        }
+
+        btnCancelTrashSelection.setOnClickListener {
+            adapter.clearSelection()
+        }
+
+        btnRestoreSelected.setOnClickListener {
+            val selected = adapter.getSelectedItems()
+            if (selected.isNotEmpty()) {
+                showRestoreConfirmation(selected)
+            }
+        }
+
+        btnDeleteSelected.setOnClickListener {
+            val selected = adapter.getSelectedItems()
+            if (selected.isNotEmpty()) {
+                showDeleteSelectedConfirmation(selected)
+            }
+        }
+    }
+
+    private fun updateSelectionUI(count: Int) {
+        if (count > 0) {
+            trashSelectionBar.visibility = View.VISIBLE
+            trashHeader.visibility = View.GONE
+            tvTrashSelectionCount.text = resources.getQuantityString(R.plurals.selection_count, count, count)
+        } else {
+            trashSelectionBar.visibility = View.GONE
+            if (adapter.itemCount > 0) {
+                trashHeader.visibility = View.VISIBLE
+            }
         }
     }
 
@@ -123,10 +171,13 @@ class TrashFragment : Fragment() {
             withContext(Dispatchers.Main) {
                 if (items.isEmpty()) {
                     trashHeader.visibility = View.GONE
+                    trashSelectionBar.visibility = View.GONE
                     recyclerTrash.visibility = View.GONE
                     emptyTrashView.visibility = View.VISIBLE
                 } else {
-                    trashHeader.visibility = View.VISIBLE
+                    if (!adapter.isSelectionMode) {
+                        trashHeader.visibility = View.VISIBLE
+                    }
                     recyclerTrash.visibility = View.VISIBLE
                     emptyTrashView.visibility = View.GONE
 
@@ -151,24 +202,62 @@ class TrashFragment : Fragment() {
         }
     }
 
-    private fun showEmptyTrashConfirmation() {
+    private fun showRestoreConfirmation(selected: List<MediaItemEntity>) {
         AlertDialog.Builder(requireContext())
             .setTitle(R.string.confirm_title)
-            .setMessage(R.string.confirm_empty_trash)
-            .setPositiveButton(R.string.btn_delete_permanent) { _, _ ->
-                emptyTrash()
+            .setMessage(resources.getQuantityString(R.plurals.confirm_restore_selected, selected.size, selected.size))
+            .setPositiveButton(R.string.btn_restore) { _, _ ->
+                restoreSelectedItems(selected)
             }
             .setNegativeButton(R.string.cancel, null)
             .show()
     }
 
-    private fun emptyTrash() {
+    private fun restoreSelectedItems(selected: List<MediaItemEntity>) {
         lifecycleScope.launch(Dispatchers.IO) {
-            val trashedItems = db.mediaDao().getTrashedItems()
+            for (item in selected) {
+                db.mediaDao().updateStatus(item.mediaId, MediaStatus.KEPT, null)
+            }
+            withContext(Dispatchers.Main) {
+                adapter.clearSelection()
+                loadTrashItems()
+                (activity as? MainActivity)?.updateTrashBadge()
+            }
+        }
+    }
 
+    private fun showDeleteSelectedConfirmation(selected: List<MediaItemEntity>) {
+        AlertDialog.Builder(requireContext())
+            .setTitle(R.string.confirm_title)
+            .setMessage(resources.getQuantityString(R.plurals.confirm_trash_selected, selected.size, selected.size))
+            .setPositiveButton(R.string.btn_delete_permanent) { _, _ ->
+                executePermanentDeletion(selected)
+            }
+            .setNegativeButton(R.string.cancel, null)
+            .show()
+    }
+
+    private fun showEmptyTrashConfirmation() {
+        AlertDialog.Builder(requireContext())
+            .setTitle(R.string.confirm_title)
+            .setMessage(R.string.confirm_empty_trash)
+            .setPositiveButton(R.string.btn_delete_permanent) { _, _ ->
+                lifecycleScope.launch(Dispatchers.IO) {
+                    val allTrashed = db.mediaDao().getTrashedItems()
+                    withContext(Dispatchers.Main) {
+                        executePermanentDeletion(allTrashed)
+                    }
+                }
+            }
+            .setNegativeButton(R.string.cancel, null)
+            .show()
+    }
+
+    private fun executePermanentDeletion(itemsToDelete: List<MediaItemEntity>) {
+        lifecycleScope.launch(Dispatchers.IO) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-                // Android 11+: Use createDeleteRequest for batch deletion
-                val uris = trashedItems.map { item ->
+                pendingDeleteItems = itemsToDelete
+                val uris = itemsToDelete.map { item ->
                     buildMediaUri(item.mediaId, item.mediaType)
                 }
 
@@ -180,12 +269,13 @@ class TrashFragment : Fragment() {
                         val request = IntentSenderRequest.Builder(pendingIntent.intentSender).build()
                         deleteRequestLauncher.launch(request)
                     } catch (e: Exception) {
-                        // If createDeleteRequest fails, just remove from our DB
                         lifecycleScope.launch(Dispatchers.IO) {
-                            for (item in trashedItems) {
+                            for (item in itemsToDelete) {
                                 db.mediaDao().delete(item.mediaId)
                             }
+                            pendingDeleteItems = null
                             withContext(Dispatchers.Main) {
+                                adapter.clearSelection()
                                 loadTrashItems()
                                 (activity as? MainActivity)?.updateTrashBadge()
                             }
@@ -193,15 +283,14 @@ class TrashFragment : Fragment() {
                     }
                 }
             } else {
-                // Android 10 and below: Delete directly
                 var totalFreed = 0L
-                for (item in trashedItems) {
+                for (item in itemsToDelete) {
                     try {
                         val uri = buildMediaUri(item.mediaId, item.mediaType)
                         requireContext().contentResolver.delete(uri, null, null)
                         totalFreed += item.fileSize
                     } catch (e: Exception) {
-                        // File may already be deleted
+                        // Arquivo pode já ter sido removido
                     }
                     db.mediaDao().delete(item.mediaId)
                 }
@@ -211,6 +300,7 @@ class TrashFragment : Fragment() {
                     prefs.edit { putLong(PrefsKeys.TOTAL_SPACE_FREED, currentFreed + totalFreed) }
                 }
                 withContext(Dispatchers.Main) {
+                    adapter.clearSelection()
                     loadTrashItems()
                     (activity as? MainActivity)?.updateTrashBadge()
                 }

@@ -17,4 +17,8 @@
         android:icon="@drawable/ic_shuffle"
         android:title="@string/toggle_random"
         app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/action_filter_album"
+        android:title="@string/filter_album"
+        app:showAsAction="never" />
 </menu>

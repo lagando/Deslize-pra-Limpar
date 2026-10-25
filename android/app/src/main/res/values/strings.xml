@@ -116,4 +116,14 @@
         <item quantity="one">Return %1$d item to the swipe screen?</item>
         <item quantity="other">Return %1$d items to the swipe screen?</item>
     </plurals>
+
+    <!-- Album Filter & Trash Multi-selection -->
+    <string name="filter_album">Filter by folder</string>
+    <string name="all_albums">All folders</string>
+    <string name="album_filtered_format">Folder: %1$s</string>
+    <string name="btn_restore_selected">Restore</string>
+    <plurals name="confirm_restore_selected">
+        <item quantity="one">Restore %1$d selected item?</item>
+        <item quantity="other">Restore %1$d selected items?</item>
+    </plurals>
 </resources>

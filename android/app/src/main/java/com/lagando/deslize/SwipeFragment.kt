@@ -1,12 +1,10 @@
 package com.lagando.deslize
 
 import android.Manifest
-import android.content.ContentUris
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
-import android.provider.MediaStore
 import android.provider.Settings
 import android.text.format.Formatter
 import android.view.LayoutInflater
@@ -21,36 +19,31 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.ProgressBar
 import android.widget.TextView
+import androidx.appcompat.app.AlertDialog
 import androidx.core.app.ActivityCompat
 import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.lifecycleScope
 import com.bumptech.glide.Glide
-import com.lagando.deslize.data.AppDatabase
-import com.lagando.deslize.data.MediaItemEntity
 import com.lagando.deslize.data.PrefsKeys
 import com.lagando.deslize.model.MediaItem
 import com.lagando.deslize.model.MediaStatus
 import com.lagando.deslize.model.MediaType
 import com.google.android.material.button.MaterialButton
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import kotlin.math.abs
 import kotlin.math.min
 
 /**
- * Main fragment for the swipe-to-clean interface.
- * Displays photos/videos fullscreen and allows swiping:
- * - Left to mark for deletion (trash)
- * - Right to keep
- * Also provides Excluir/Manter buttons as an alternative to swiping.
- * Supports random or sequential ordering via toolbar toggle.
+ * Fragment principal para a interface de swipe-to-clean.
+ * Exibe fotos e vídeos e permite deslizar:
+ * - Esquerda: marcar para a lixeira
+ * - Direita: manter na galeria
+ * Utiliza SwipeViewModel para preservar o estado através de rotações de tela.
  */
 class SwipeFragment : Fragment() {
 
-    private lateinit var db: AppDatabase
+    private val viewModel: SwipeViewModel by viewModels()
 
     // Views
     private lateinit var swipeContent: LinearLayout
@@ -87,31 +80,12 @@ class SwipeFragment : Fragment() {
     private lateinit var tvAllCleanPermissionHint: TextView
     private lateinit var btnAllCleanGrantPermission: MaterialButton
 
-    // Track if we were showing the all-clean view (for onResume reload)
     private var isShowingAllClean = false
-
-    // Data
-    private var mediaItems = mutableListOf<MediaItem>()
-    private var currentIndex = 0
-    private var totalCount = 0
     private var isAnimating = false
 
-    // Random mode
-    private var isRandomMode = false
     private var randomMenuItem: MenuItem? = null
-
-    // Sort by size mode
-    private var isSortBySizeMode = false
     private var sortBySizeMenuItem: MenuItem? = null
-
-    // Undo tracking
     private var undoMenuItem: MenuItem? = null
-    private var lastAction: UndoAction? = null
-
-    private data class UndoAction(
-        val item: MediaItem,
-        val status: String // "trashed" or "kept"
-    )
 
     // Swipe gesture
     private var startX = 0f
@@ -127,13 +101,15 @@ class SwipeFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        db = AppDatabase.getDatabase(requireContext())
         screenWidth = resources.displayMetrics.widthPixels
         screenHeight = resources.displayMetrics.heightPixels
+
         bindViews(view)
         setupButtons()
         setupSwipeGesture()
         setupToolbarMenu()
+        observeViewModel()
+
         loadMediaItems()
     }
 
@@ -168,64 +144,104 @@ class SwipeFragment : Fragment() {
         tvBannerSubtitle = view.findViewById(R.id.tvBannerSubtitle)
     }
 
-    private fun setupButtons() {
-        btnDelete.setOnClickListener {
-            if (!isAnimating && currentIndex < mediaItems.size) {
-                animateOut(-1) { markAsDeleted() }
-            }
+    private fun observeViewModel() {
+        viewModel.isLoading.observe(viewLifecycleOwner) { loading ->
+            progressBar.visibility = if (loading) View.VISIBLE else View.GONE
         }
-        btnKeep.setOnClickListener {
-            if (!isAnimating && currentIndex < mediaItems.size) {
-                animateOut(1) { markAsKept() }
-            }
-        }
-        btnDecideLater.setOnClickListener {
-            if (!isAnimating && currentIndex < mediaItems.size) {
-                // Skip without saving to database - item will reappear next session
-                skipCurrent()
-            }
-        }
-        btnGrantPermission.setOnClickListener {
-            (activity as? MainActivity)?.requestMediaPermissions()
-        }
-        btnAllCleanGrantPermission.setOnClickListener {
-            handleGrantPermissionClick()
-        }
-        playButton.setOnClickListener {
-            if (!isAnimating && currentIndex < mediaItems.size) {
-                val item = mediaItems[currentIndex]
-                if (item.mediaType == MediaType.VIDEO) {
-                    val intent = android.content.Intent(android.content.Intent.ACTION_VIEW)
-                    intent.setDataAndType(item.contentUri, "video/*")
-                    intent.addFlags(android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                    startActivity(intent)
+
+        viewModel.mediaItems.observe(viewLifecycleOwner) { items ->
+            if (items.isNullOrEmpty()) {
+                if (viewModel.isLoading.value != true) {
+                    showAllClean()
                 }
+            } else {
+                swipeContent.visibility = View.VISIBLE
+                allCleanView.visibility = View.GONE
+                val idx = viewModel.currentIndex.value ?: 0
+                val safeIdx = idx.coerceIn(0, items.size - 1)
+                resetViewPositionsImmediate()
+                showMedia(items[safeIdx])
+                updateCounter(safeIdx, items.size)
             }
         }
-        btnShareMedia.setOnClickListener {
-            if (currentIndex < mediaItems.size) {
-                val item = mediaItems[currentIndex]
-                val mimeType = if (item.mediaType == MediaType.VIDEO) "video/*" else "image/*"
-                val promoText = if (isRandomMode) {
-                    getString(R.string.share_promo_text_random)
-                } else {
-                    getString(R.string.share_promo_text)
-                }
-                val shareIntent = Intent(Intent.ACTION_SEND).apply {
-                    type = mimeType
-                    putExtra(Intent.EXTRA_STREAM, item.contentUri)
-                    putExtra(Intent.EXTRA_TEXT, promoText)
-                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                }
-                startActivity(Intent.createChooser(shareIntent, getString(R.string.share)))
-            }
+
+        viewModel.lastAction.observe(viewLifecycleOwner) { action ->
+            undoMenuItem?.isEnabled = action != null
+            undoMenuItem?.icon?.alpha = if (action != null) 255 else 77
+        }
+
+        viewModel.isRandomMode.observe(viewLifecycleOwner) { isRandom ->
+            randomMenuItem?.setIcon(if (isRandom) R.drawable.ic_sequential else R.drawable.ic_shuffle)
+        }
+
+        viewModel.isSortBySizeMode.observe(viewLifecycleOwner) { isSort ->
+            sortBySizeMenuItem?.icon?.alpha = if (isSort) 255 else 120
         }
     }
 
-    /**
-     * Sets up the toolbar menu with the random/sequential toggle button.
-     * Uses MenuProvider API (modern approach, no deprecated setHasOptionsMenu).
-     */
+    private fun setupButtons() {
+        btnDelete.setOnClickListener {
+            if (!isAnimating && getCurrentItem() != null) {
+                animateOut(-1) {
+                    viewModel.markCurrentAsDeleted {
+                        (activity as? MainActivity)?.updateTrashBadge()
+                    }
+                }
+            }
+        }
+
+        btnKeep.setOnClickListener {
+            if (!isAnimating && getCurrentItem() != null) {
+                animateOut(1) {
+                    viewModel.markCurrentAsKept {}
+                }
+            }
+        }
+
+        btnDecideLater.setOnClickListener {
+            if (!isAnimating && getCurrentItem() != null) {
+                resetViewPositionsImmediate()
+                viewModel.skipCurrent {}
+            }
+        }
+
+        btnGrantPermission.setOnClickListener {
+            (activity as? MainActivity)?.requestMediaPermissions()
+        }
+
+        btnAllCleanGrantPermission.setOnClickListener {
+            handleGrantPermissionClick()
+        }
+
+        playButton.setOnClickListener {
+            val item = getCurrentItem()
+            if (!isAnimating && item != null && item.mediaType == MediaType.VIDEO) {
+                val intent = Intent(Intent.ACTION_VIEW).apply {
+                    setDataAndType(item.contentUri, "video/*")
+                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                }
+                startActivity(intent)
+            }
+        }
+
+        btnShareMedia.setOnClickListener {
+            val item = getCurrentItem() ?: return@setOnClickListener
+            val mimeType = if (item.mediaType == MediaType.VIDEO) "video/*" else "image/*"
+            val promoText = if (viewModel.isRandomMode.value == true) {
+                getString(R.string.share_promo_text_random)
+            } else {
+                getString(R.string.share_promo_text)
+            }
+            val shareIntent = Intent(Intent.ACTION_SEND).apply {
+                type = mimeType
+                putExtra(Intent.EXTRA_STREAM, item.contentUri)
+                putExtra(Intent.EXTRA_TEXT, promoText)
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            }
+            startActivity(Intent.createChooser(shareIntent, getString(R.string.share)))
+        }
+    }
+
     private fun setupToolbarMenu() {
         requireActivity().addMenuProvider(object : MenuProvider {
             override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
@@ -233,23 +249,52 @@ class SwipeFragment : Fragment() {
                 undoMenuItem = menu.findItem(R.id.action_undo)
                 sortBySizeMenuItem = menu.findItem(R.id.action_sort_by_size)
                 randomMenuItem = menu.findItem(R.id.action_toggle_random)
-                updateRandomIcon()
-                updateSortBySizeIcon()
-                updateUndoButton()
+
+                // Sincroniza estados
+                val action = viewModel.lastAction.value
+                undoMenuItem?.isEnabled = action != null
+                undoMenuItem?.icon?.alpha = if (action != null) 255 else 77
+
+                val isRandom = viewModel.isRandomMode.value ?: false
+                randomMenuItem?.setIcon(if (isRandom) R.drawable.ic_sequential else R.drawable.ic_shuffle)
+
+                val isSort = viewModel.isSortBySizeMode.value ?: false
+                sortBySizeMenuItem?.icon?.alpha = if (isSort) 255 else 120
             }
 
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
                 return when (menuItem.itemId) {
                     R.id.action_undo -> {
-                        performUndo()
+                        viewModel.performUndo { _, status ->
+                            resetViewPositionsImmediate()
+                            if (status == MediaStatus.TRASHED) {
+                                (activity as? MainActivity)?.updateTrashBadge()
+                            }
+                        }
                         true
                     }
                     R.id.action_sort_by_size -> {
-                        toggleSortBySize()
+                        viewModel.toggleSortBySizeMode()
+                        val isSort = viewModel.isSortBySizeMode.value ?: false
+                        if (isSort) {
+                            showModeBanner("\uD83D\uDCCA", R.string.mode_sort_by_size, R.string.mode_sort_by_size_detail)
+                        } else {
+                            showModeBanner("\uD83D\uDCC5", R.string.mode_sort_by_date, R.string.mode_sort_by_date_detail)
+                        }
                         true
                     }
                     R.id.action_toggle_random -> {
-                        toggleRandomMode()
+                        viewModel.toggleRandomMode()
+                        val isRandom = viewModel.isRandomMode.value ?: false
+                        if (isRandom) {
+                            showModeBanner("\uD83D\uDD00", R.string.mode_random, R.string.mode_random_detail)
+                        } else {
+                            showModeBanner("\uD83D\uDCC5", R.string.mode_sequential, R.string.mode_sequential_detail)
+                        }
+                        true
+                    }
+                    R.id.action_filter_album -> {
+                        showAlbumFilterDialog()
                         true
                     }
                     else -> false
@@ -258,106 +303,41 @@ class SwipeFragment : Fragment() {
         }, viewLifecycleOwner, Lifecycle.State.RESUMED)
     }
 
-    /**
-     * Toggles between random and sequential ordering mode.
-     * When switching to random: shuffles remaining items from currentIndex onward.
-     * When switching to sequential: re-sorts remaining items by date (newest first).
-     */
-    private fun toggleRandomMode() {
-        isRandomMode = !isRandomMode
+    private fun showAlbumFilterDialog() {
+        val buckets = viewModel.availableBuckets.value ?: emptyList()
+        val currentBucket = viewModel.selectedBucket.value
 
-        // Mutual exclusion: deactivate sort-by-size when enabling random
-        if (isRandomMode && isSortBySizeMode) {
-            isSortBySizeMode = false
-            updateSortBySizeIcon()
+        val options = mutableListOf<String>()
+        options.add(getString(R.string.all_albums))
+        options.addAll(buckets)
+
+        val selectedIdx = if (currentBucket == null) 0 else {
+            val idx = buckets.indexOf(currentBucket)
+            if (idx >= 0) idx + 1 else 0
         }
 
-        updateRandomIcon()
+        AlertDialog.Builder(requireContext())
+            .setTitle(R.string.filter_album)
+            .setSingleChoiceItems(options.toTypedArray(), selectedIdx) { dialog, which ->
+                val chosenBucket = if (which == 0) null else options[which]
+                viewModel.setBucketFilter(chosenBucket)
+                dialog.dismiss()
 
-        if (mediaItems.isEmpty() || currentIndex >= mediaItems.size) return
-
-        if (isRandomMode) {
-            showModeBanner("\uD83D\uDD00", R.string.mode_random, R.string.mode_random_detail)
-            if (mediaItems.size > 1) {
-                currentIndex = (0 until mediaItems.size).random()
+                val title = if (chosenBucket == null) getString(R.string.all_albums) else chosenBucket
+                showModeBanner("📁", R.string.filter_album, titleRes = 0, customSubtitle = title)
             }
-            resetViewPositionsImmediate()
-            showMedia(mediaItems[currentIndex])
-            updateCounter()
-        } else {
-            showModeBanner("\uD83D\uDCC5", R.string.mode_sequential, R.string.mode_sequential_detail)
-            mediaItems.sortByDescending { it.dateAdded }
-            currentIndex = 0
-            resetViewPositionsImmediate()
-            showMedia(mediaItems[currentIndex])
-            updateCounter()
-        }
+            .setNegativeButton(R.string.cancel, null)
+            .show()
     }
 
-    /**
-     * Toggles sort-by-size mode.
-     * When enabled: sorts items by file size (largest first) for prioritized cleanup.
-     * When disabled: reverts to default date ordering (newest first).
-     * Mutually exclusive with random mode.
-     */
-    private fun toggleSortBySize() {
-        isSortBySizeMode = !isSortBySizeMode
-
-        // Mutual exclusion: deactivate random when enabling sort-by-size
-        if (isSortBySizeMode && isRandomMode) {
-            isRandomMode = false
-            updateRandomIcon()
-        }
-
-        updateSortBySizeIcon()
-
-        if (mediaItems.isEmpty() || currentIndex >= mediaItems.size) return
-
-        if (isSortBySizeMode) {
-            showModeBanner("\uD83D\uDCCA", R.string.mode_sort_by_size, R.string.mode_sort_by_size_detail)
-            mediaItems.sortByDescending { it.size }
-            currentIndex = 0
-            resetViewPositionsImmediate()
-            showMedia(mediaItems[currentIndex])
-            updateCounter()
-        } else {
-            showModeBanner("\uD83D\uDCC5", R.string.mode_sort_by_date, R.string.mode_sort_by_date_detail)
-            mediaItems.sortByDescending { it.dateAdded }
-            currentIndex = 0
-            resetViewPositionsImmediate()
-            showMedia(mediaItems[currentIndex])
-            updateCounter()
-        }
-    }
-
-    private fun updateRandomIcon() {
-        randomMenuItem?.setIcon(
-            if (isRandomMode) R.drawable.ic_sequential else R.drawable.ic_shuffle
-        )
-    }
-
-    /** Updates the sort-by-size icon opacity to reflect active/inactive state. */
-    private fun updateSortBySizeIcon() {
-        sortBySizeMenuItem?.icon?.alpha = if (isSortBySizeMode) 255 else 120
-    }
-
-    /**
-     * Shows an animated banner at the top of the screen to provide clear feedback
-     * when the user toggles a display mode (random, sequential, sort-by-size, etc.).
-     * The banner slides in from the top, stays visible for 2 seconds, then fades out.
-     * Multiple rapid taps cancel the previous banner before showing the new one.
-     */
-    private fun showModeBanner(icon: String, titleRes: Int, subtitleRes: Int) {
-        // Cancel any pending hide animation
+    private fun showModeBanner(icon: String, titleRes: Int, subtitleRes: Int = 0, customSubtitle: String? = null) {
         bannerRunnable?.let { modeBanner.removeCallbacks(it) }
         modeBanner.animate().cancel()
 
-        // Set content
         tvBannerIcon.text = icon
         tvBannerTitle.text = getString(titleRes)
-        tvBannerSubtitle.text = getString(subtitleRes)
+        tvBannerSubtitle.text = customSubtitle ?: if (subtitleRes != 0) getString(subtitleRes) else ""
 
-        // Show and animate in
         modeBanner.visibility = View.VISIBLE
         modeBanner.alpha = 1f
         modeBanner.translationY = -100f * resources.displayMetrics.density
@@ -367,7 +347,6 @@ class SwipeFragment : Fragment() {
             .setInterpolator(android.view.animation.DecelerateInterpolator())
             .start()
 
-        // Schedule fade-out after 2 seconds
         bannerRunnable = Runnable {
             modeBanner.animate()
                 .alpha(0f)
@@ -381,44 +360,10 @@ class SwipeFragment : Fragment() {
         modeBanner.postDelayed(bannerRunnable!!, 2000)
     }
 
-    /**
-     * Undoes the last swipe action.
-     * Removes the item from the database and re-inserts it into the current list.
-     */
-    private fun performUndo() {
-        val action = lastAction ?: return
-        lastAction = null
-        updateUndoButton()
-
-        lifecycleScope.launch(Dispatchers.IO) {
-            // Remove the item from the database (un-review it)
-            db.mediaDao().delete(action.item.id)
-            withContext(Dispatchers.Main) {
-                // Re-insert the item at the current position
-                mediaItems.add(currentIndex, action.item)
-                // Ensure swipe UI is visible (might have been hidden by "all clean" screen)
-                swipeContent.visibility = View.VISIBLE
-                allCleanView.visibility = View.GONE
-                resetViewPositionsImmediate()
-                showMedia(action.item)
-                updateCounter()
-                // Update badge if we undid a trash action
-                if (action.status == MediaStatus.TRASHED) {
-                    (activity as? MainActivity)?.updateTrashBadge()
-                }
-            }
-        }
-    }
-
-    private fun updateUndoButton() {
-        undoMenuItem?.isEnabled = lastAction != null
-        undoMenuItem?.icon?.alpha = if (lastAction != null) 255 else 77
-    }
-
     @Suppress("ClickableViewAccessibility")
     private fun setupSwipeGesture() {
         mediaContainer.setOnTouchListener { _, event ->
-            if (isAnimating || currentIndex >= mediaItems.size) return@setOnTouchListener false
+            if (isAnimating || getCurrentItem() == null) return@setOnTouchListener false
 
             when (event.action) {
                 MotionEvent.ACTION_DOWN -> {
@@ -427,13 +372,12 @@ class SwipeFragment : Fragment() {
                 }
                 MotionEvent.ACTION_MOVE -> {
                     val dx = event.rawX - startX
-                    // Translate and rotate the image container children
+
                     imageView.translationX = dx
                     imageView.rotation = dx / 50f
                     videoThumbnail.translationX = dx
                     videoThumbnail.rotation = dx / 50f
 
-                    // Show overlays based on direction
                     if (dx < -30) {
                         val progress = min(1f, abs(dx) / SWIPE_THRESHOLD)
                         overlayDelete.alpha = progress * 0.5f
@@ -457,13 +401,16 @@ class SwipeFragment : Fragment() {
                 MotionEvent.ACTION_UP, MotionEvent.ACTION_CANCEL -> {
                     val dx = event.rawX - startX
                     if (dx < -SWIPE_THRESHOLD) {
-                        // Swiped left - Delete
-                        animateOut(-1) { markAsDeleted() }
+                        animateOut(-1) {
+                            viewModel.markCurrentAsDeleted {
+                                (activity as? MainActivity)?.updateTrashBadge()
+                            }
+                        }
                     } else if (dx > SWIPE_THRESHOLD) {
-                        // Swiped right - Keep
-                        animateOut(1) { markAsKept() }
+                        animateOut(1) {
+                            viewModel.markCurrentAsKept {}
+                        }
                     } else {
-                        // Spring back
                         resetViewPositions()
                     }
                     true
@@ -475,8 +422,8 @@ class SwipeFragment : Fragment() {
 
     private fun animateOut(direction: Int, onComplete: () -> Unit) {
         isAnimating = true
-        val screenWidth = resources.displayMetrics.widthPixels.toFloat()
-        val targetX = if (direction < 0) -screenWidth * 1.5f else screenWidth * 1.5f
+        val width = resources.displayMetrics.widthPixels.toFloat()
+        val targetX = if (direction < 0) -width * 1.5f else width * 1.5f
 
         imageView.animate()
             .translationX(targetX)
@@ -506,106 +453,6 @@ class SwipeFragment : Fragment() {
         iconOverlayKeep.animate().alpha(0f).setDuration(200).start()
     }
 
-    private fun markAsDeleted() {
-        if (currentIndex >= mediaItems.size) return
-        val item = mediaItems[currentIndex]
-
-        lifecycleScope.launch(Dispatchers.IO) {
-            db.mediaDao().insert(
-                MediaItemEntity(
-                    mediaId = item.id,
-                    mediaUri = item.contentUri.toString(),
-                    status = MediaStatus.TRASHED,
-                    trashedDate = System.currentTimeMillis(),
-                    fileSize = item.size,
-                    mediaType = item.mediaType,
-                    displayName = item.displayName
-                )
-            )
-            withContext(Dispatchers.Main) {
-                // Save undo state before removing
-                lastAction = UndoAction(item, MediaStatus.TRASHED)
-                updateUndoButton()
-                // Remove the item from the list since it's been reviewed
-                mediaItems.removeAt(currentIndex)
-                showNextItem()
-                (activity as? MainActivity)?.updateTrashBadge()
-            }
-        }
-    }
-
-    private fun markAsKept() {
-        if (currentIndex >= mediaItems.size) return
-        val item = mediaItems[currentIndex]
-
-        lifecycleScope.launch(Dispatchers.IO) {
-            db.mediaDao().insert(
-                MediaItemEntity(
-                    mediaId = item.id,
-                    mediaUri = item.contentUri.toString(),
-                    status = MediaStatus.KEPT,
-                    fileSize = item.size,
-                    mediaType = item.mediaType,
-                    displayName = item.displayName
-                )
-            )
-            withContext(Dispatchers.Main) {
-                // Save undo state before removing
-                lastAction = UndoAction(item, MediaStatus.KEPT)
-                updateUndoButton()
-                // Remove the item from the list since it's been reviewed
-                mediaItems.removeAt(currentIndex)
-                showNextItem()
-            }
-        }
-    }
-
-    /**
-     * Skips the current item without saving to database ("Decidir depois").
-     * The item is moved to the end of the list so user sees other items first,
-     * but will come back to it if they keep going. On next app session,
-     * it will also reappear since it was never saved to the database.
-     */
-    private fun skipCurrent() {
-        if (currentIndex >= mediaItems.size) return
-
-        // Move item to end of list so user sees it again later
-        val skippedItem = mediaItems.removeAt(currentIndex)
-        mediaItems.add(skippedItem)
-
-        // Reset views and show next (currentIndex stays the same since we removed the current)
-        resetViewPositionsImmediate()
-        showNextItem()
-    }
-
-    /**
-     * Shows the next item in the list after an action (delete, keep, or skip).
-     * If in random mode, picks a random index. Otherwise sequential.
-     */
-    private fun showNextItem() {
-        if (mediaItems.isEmpty()) {
-            showAllClean()
-            return
-        }
-
-        // After removing/moving an item, currentIndex may point to the next item already
-        // In random mode, pick a random index from the remaining items
-        if (isRandomMode && mediaItems.size > 1) {
-            currentIndex = (0 until mediaItems.size).random()
-        } else {
-            // In sequential mode, keep currentIndex (since we removed the previous item)
-            // But make sure we don't go out of bounds
-            if (currentIndex >= mediaItems.size) {
-                currentIndex = 0
-            }
-        }
-
-        resetViewPositionsImmediate()
-        showMedia(mediaItems[currentIndex])
-        updateCounter()
-    }
-
-    /** Reset view positions immediately without animation (for transitions) */
     private fun resetViewPositionsImmediate() {
         imageView.translationX = 0f
         imageView.rotation = 0f
@@ -619,45 +466,10 @@ class SwipeFragment : Fragment() {
         iconOverlayKeep.alpha = 0f
     }
 
-    fun loadMediaItems() {
-        progressBar.visibility = View.VISIBLE
-        swipeContent.visibility = View.GONE
-        allCleanView.visibility = View.GONE
-
-        lifecycleScope.launch(Dispatchers.IO) {
-            val reviewedIds = db.mediaDao().getReviewedIds().toSet()
-            val allMedia = queryMediaStore()
-            val unreviewed = allMedia.filter { it.id !in reviewedIds }.toMutableList()
-
-            // Apply sorting based on active mode
-            if (isRandomMode) {
-                unreviewed.shuffle()
-            } else if (isSortBySizeMode) {
-                unreviewed.sortByDescending { it.size }
-            }
-
-            withContext(Dispatchers.Main) {
-                progressBar.visibility = View.GONE
-                mediaItems.clear()
-                mediaItems.addAll(unreviewed)
-                totalCount = allMedia.size
-                currentIndex = 0
-
-                if (mediaItems.isNotEmpty()) {
-                    swipeContent.visibility = View.VISIBLE
-
-                    // In random mode, start at a random position
-                    if (isRandomMode && mediaItems.size > 1) {
-                        currentIndex = (0 until mediaItems.size).random()
-                    }
-
-                    showMedia(mediaItems[currentIndex])
-                    updateCounter()
-                } else {
-                    showAllClean()
-                }
-            }
-        }
+    private fun getCurrentItem(): MediaItem? {
+        val items = viewModel.mediaItems.value ?: return null
+        val idx = viewModel.currentIndex.value ?: 0
+        return if (idx in items.indices) items[idx] else null
     }
 
     private fun showMedia(item: MediaItem) {
@@ -666,6 +478,7 @@ class SwipeFragment : Fragment() {
             videoThumbnail.visibility = View.VISIBLE
             playButton.visibility = View.VISIBLE
             tvVideoBadge.visibility = View.VISIBLE
+            tvVideoBadge.text = getString(R.string.video_label)
 
             Glide.with(this)
                 .load(item.contentUri)
@@ -674,10 +487,18 @@ class SwipeFragment : Fragment() {
                 .placeholder(R.color.background_dark)
                 .into(videoThumbnail)
         } else {
-            imageView.visibility = View.VISIBLE
             videoThumbnail.visibility = View.GONE
             playButton.visibility = View.GONE
-            tvVideoBadge.visibility = View.GONE
+
+            val isGif = item.displayName.endsWith(".gif", ignoreCase = true)
+            if (isGif) {
+                tvVideoBadge.visibility = View.VISIBLE
+                tvVideoBadge.text = "GIF"
+            } else {
+                tvVideoBadge.visibility = View.GONE
+            }
+
+            imageView.visibility = View.VISIBLE
 
             Glide.with(this)
                 .load(item.contentUri)
@@ -692,51 +513,40 @@ class SwipeFragment : Fragment() {
                 .into(imageView)
         }
 
-        // File info
         val sizeStr = Formatter.formatFileSize(requireContext(), item.size)
         tvFileInfo.text = getString(R.string.file_info_format, item.displayName, sizeStr)
 
-        // Date display (subtle)
         val dateFormat = java.text.SimpleDateFormat("dd/MM/yyyy", java.util.Locale.getDefault())
-        val date = java.util.Date(item.dateAdded * 1000) // dateAdded is in seconds
+        val date = java.util.Date(item.dateAdded * 1000)
         tvMediaDate.text = dateFormat.format(date)
 
-        // Preload next photos into Glide cache for instant swipe
         preloadUpcoming()
     }
 
-    /**
-     * Preloads the next 4 upcoming photos into Glide's memory cache.
-     * In sequential mode: preloads the next 4 items from current position.
-     * In random mode: preloads 4 random items from remaining list.
-     * This ensures the next swipe displays the photo instantly.
-     */
     private fun preloadUpcoming() {
-        if (mediaItems.size <= 1) return
+        val items = viewModel.mediaItems.value ?: return
+        val currentIdx = viewModel.currentIndex.value ?: 0
+        if (items.size <= 1) return
 
-        val itemsToPreload = if (isRandomMode) {
-            mediaItems.indices
-                .filter { it != currentIndex }
-                .shuffled()
-                .take(4)
-                .map { mediaItems[it] }
-        } else {
-            (1..4).mapNotNull { offset ->
-                val idx = currentIndex + offset
-                if (idx < mediaItems.size) mediaItems[idx] else null
-            }
+        val itemsToPreload = (1..4).mapNotNull { offset ->
+            val idx = currentIdx + offset
+            if (idx < items.size) items[idx] else null
         }
 
-        for (item in itemsToPreload) {
+        for (it in itemsToPreload) {
             Glide.with(this)
-                .load(item.contentUri)
+                .load(it.contentUri)
                 .override(screenWidth, screenHeight)
                 .preload()
         }
     }
 
-    private fun updateCounter() {
-        tvCounter.text = getString(R.string.counter_format, currentIndex + 1, mediaItems.size)
+    private fun updateCounter(current: Int, total: Int) {
+        tvCounter.text = getString(R.string.counter_format, current + 1, total)
+    }
+
+    fun loadMediaItems() {
+        viewModel.loadMedia()
     }
 
     private fun showAllClean() {
@@ -744,67 +554,44 @@ class SwipeFragment : Fragment() {
         allCleanView.visibility = View.VISIBLE
         isShowingAllClean = true
 
-        // Check if we actually have full permissions
         val mainActivity = activity as? MainActivity
         if (mainActivity != null && !mainActivity.hasMediaPermissions()) {
-            // No full permission — show hint and button
             tvAllCleanPermissionHint.visibility = View.VISIBLE
             btnAllCleanGrantPermission.visibility = View.VISIBLE
-
-            // Update button text based on whether permission is permanently denied
             if (isPermissionPermanentlyDenied()) {
                 btnAllCleanGrantPermission.text = getString(R.string.btn_open_settings)
             } else {
                 btnAllCleanGrantPermission.text = getString(R.string.btn_grant_permission)
             }
         } else {
-            // Has full permission — normal "all clean" screen
             tvAllCleanPermissionHint.visibility = View.GONE
             btnAllCleanGrantPermission.visibility = View.GONE
         }
     }
 
-    /**
-     * Called from MainActivity.onResume() when returning from Settings.
-     * If we were showing the "all clean" view and now have permission, reload media.
-     */
     fun reloadIfNeeded() {
         if (isShowingAllClean) {
             isShowingAllClean = false
-            loadMediaItems()
+            viewModel.loadMedia(forceRefresh = true)
         }
     }
 
-    /**
-     * Handles the "grant permission" button click on the all-clean screen.
-     * If permission is permanently denied (user rejected 2x), opens app Settings.
-     * Otherwise, requests permission normally.
-     */
     private fun handleGrantPermissionClick() {
         val act = activity ?: return
-
-        // Mark that we've attempted to request permission
         val prefs = act.getSharedPreferences(PrefsKeys.PREFS_NAME, android.content.Context.MODE_PRIVATE)
         val alreadyRequested = prefs.getBoolean(PrefsKeys.PERMISSION_REQUESTED, false)
         prefs.edit().putBoolean(PrefsKeys.PERMISSION_REQUESTED, true).apply()
 
         if (isPermissionPermanentlyDenied() && alreadyRequested) {
-            // Permission permanently denied — open app settings
             val intent = Intent(Settings.ACTION_APPLICATION_DETAILS_SETTINGS).apply {
                 data = Uri.fromParts("package", act.packageName, null)
             }
             startActivity(intent)
         } else {
-            // Request permission normally
             (act as? MainActivity)?.requestMediaPermissions()
         }
     }
 
-    /**
-     * Checks if the media permission has been permanently denied.
-     * Returns true if shouldShowRequestPermissionRationale is false
-     * (which means user selected "Don't ask again" or denied twice).
-     */
     private fun isPermissionPermanentlyDenied(): Boolean {
         val act = activity ?: return false
         val permission = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
@@ -812,8 +599,6 @@ class SwipeFragment : Fragment() {
         } else {
             Manifest.permission.READ_EXTERNAL_STORAGE
         }
-        // If shouldShowRequestPermissionRationale returns false AND we've already
-        // requested before, it means the user permanently denied.
         return !ActivityCompat.shouldShowRequestPermissionRationale(act, permission)
     }
 
@@ -822,107 +607,5 @@ class SwipeFragment : Fragment() {
         allCleanView.visibility = View.GONE
         progressBar.visibility = View.GONE
         noPermissionView.visibility = View.VISIBLE
-    }
-
-    private fun queryMediaStore(): List<MediaItem> {
-        val mediaList = mutableListOf<MediaItem>()
-        val context = requireContext()
-
-        // Query images
-        val imageProjection = arrayOf(
-            MediaStore.Images.Media._ID,
-            MediaStore.Images.Media.DISPLAY_NAME,
-            MediaStore.Images.Media.SIZE,
-            MediaStore.Images.Media.DATE_ADDED
-        )
-
-        try {
-            context.contentResolver.query(
-                MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-                imageProjection,
-                null, null,
-                "${MediaStore.Images.Media.DATE_ADDED} DESC"
-            )?.use { cursor ->
-                val idCol = cursor.getColumnIndex(MediaStore.Images.Media._ID)
-                val nameCol = cursor.getColumnIndex(MediaStore.Images.Media.DISPLAY_NAME)
-                val sizeCol = cursor.getColumnIndex(MediaStore.Images.Media.SIZE)
-                val dateCol = cursor.getColumnIndex(MediaStore.Images.Media.DATE_ADDED)
-
-                while (cursor.moveToNext()) {
-                    try {
-                        val id = if (idCol != -1) cursor.getLong(idCol) else continue
-                        val uri = ContentUris.withAppendedId(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, id)
-                        val name = if (nameCol != -1) cursor.getString(nameCol) else null
-                        
-                        mediaList.add(
-                            MediaItem(
-                                id = id,
-                                contentUri = uri,
-                                displayName = name ?: context.getString(R.string.unknown_filename),
-                                size = if (sizeCol != -1) cursor.getLong(sizeCol) else 0L,
-                                dateAdded = if (dateCol != -1) cursor.getLong(dateCol) else System.currentTimeMillis() / 1000,
-                                mediaType = MediaType.IMAGE
-                            )
-                        )
-                    } catch (e: Exception) {
-                        // Skip corrupted item
-                    }
-                }
-            }
-        } catch (e: Exception) {
-            // Handle possible SecurityException or unsupported query
-        }
-
-        // Query videos
-        val videoProjection = arrayOf(
-            MediaStore.Video.Media._ID,
-            MediaStore.Video.Media.DISPLAY_NAME,
-            MediaStore.Video.Media.SIZE,
-            MediaStore.Video.Media.DATE_ADDED,
-            MediaStore.Video.Media.DURATION
-        )
-
-        try {
-            context.contentResolver.query(
-                MediaStore.Video.Media.EXTERNAL_CONTENT_URI,
-                videoProjection,
-                null, null,
-                "${MediaStore.Video.Media.DATE_ADDED} DESC"
-            )?.use { cursor ->
-                val idCol = cursor.getColumnIndex(MediaStore.Video.Media._ID)
-                val nameCol = cursor.getColumnIndex(MediaStore.Video.Media.DISPLAY_NAME)
-                val sizeCol = cursor.getColumnIndex(MediaStore.Video.Media.SIZE)
-                val dateCol = cursor.getColumnIndex(MediaStore.Video.Media.DATE_ADDED)
-                val durCol = cursor.getColumnIndex(MediaStore.Video.Media.DURATION)
-
-                while (cursor.moveToNext()) {
-                    try {
-                        val id = if (idCol != -1) cursor.getLong(idCol) else continue
-                        val uri = ContentUris.withAppendedId(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, id)
-                        val name = if (nameCol != -1) cursor.getString(nameCol) else null
-                        
-                        mediaList.add(
-                            MediaItem(
-                                id = id,
-                                contentUri = uri,
-                                displayName = name ?: context.getString(R.string.unknown_filename),
-                                size = if (sizeCol != -1) cursor.getLong(sizeCol) else 0L,
-                                dateAdded = if (dateCol != -1) cursor.getLong(dateCol) else System.currentTimeMillis() / 1000,
-                                mediaType = MediaType.VIDEO,
-                                duration = if (durCol != -1) cursor.getLong(durCol) else 0L
-                            )
-                        )
-                    } catch (e: Exception) {
-                        // Skip corrupted item
-                    }
-                }
-            }
-        } catch (e: Exception) {
-            // Handle possible SecurityException or unsupported query
-        }
-
-        // Sort by date (newest first)
-        mediaList.sortByDescending { it.dateAdded }
-        return mediaList
     }
 }
