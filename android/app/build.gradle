@@ -9,7 +9,7 @@ android {
 
     defaultConfig {
         applicationId "com.lagando.deslize"
-        minSdk 23
+        minSdk 24
         targetSdk 37
         versionCode 14
         versionName "1.0.14"

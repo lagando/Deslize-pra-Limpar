@@ -8,7 +8,7 @@ Obrigado pelo interesse em contribuir com o **Deslize pra Limpar**! Este documen
 
 1. **JDK**: Certifique-se de ter o JDK 17 ou superior configurado.
 2. **Android Studio**: Recomendado usar a versão estável mais recente (Ladybug / Koala ou superior).
-3. **Android SDK**: O projeto requer `compileSdk 37` e `minSdk 23`.
+3. **Android SDK**: O projeto requer `compileSdk 37` e `minSdk 24`.
 4. **Clone o repositório**:
    ```bash
    git clone git@github.com:lagando/Deslize-pra-limpar.git
