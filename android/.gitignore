@@ -10,3 +10,6 @@
 local.properties
 /app/build
 *.keystore
+hs_err_pid*.log
+replay_pid*.log
+logo.png
