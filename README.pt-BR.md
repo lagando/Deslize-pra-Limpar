@@ -162,7 +162,7 @@ cd android && ./gradlew assembleRelease
 
 ## 🤝 Contribuição e Changelog
 
-- Veja como contribuir no arquivo [CONTRIBUTING.md](CONTRIBUTING.md).
+- Veja como contribuir no arquivo [CONTRIBUTING.pt-BR.md](CONTRIBUTING.pt-BR.md).
 - Veja o histórico de mudanças no arquivo [CHANGELOG.md](CHANGELOG.md).
 
 ## Licença

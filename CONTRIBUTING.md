@@ -1,77 +1,81 @@
-# Guia de Contribuição — Deslize pra Limpar
+<p align="right">
+  <a href="CONTRIBUTING.pt-BR.md">Português</a> | <b>English</b>
+</p>
 
-Obrigado pelo interesse em contribuir com o **Deslize pra Limpar**! Este documento orienta sobre o fluxo de desenvolvimento, padrões de código e envio de pull requests.
+# Contributing Guide — Deslize pra Limpar
+
+Thank you for your interest in contributing to **Deslize pra Limpar**! This document provides guidelines for development setup, code conventions, and submitting pull requests.
 
 ---
 
-## 🛠️ Configuração do Ambiente
+## 🛠️ Environment Setup
 
-1. **JDK**: Certifique-se de ter o JDK 17 ou superior configurado.
-2. **Android Studio**: Recomendado usar a versão estável mais recente (Ladybug / Koala ou superior).
-3. **Android SDK**: O projeto requer `compileSdk 37` e `minSdk 24`.
-4. **Clone o repositório**:
+1. **JDK**: Ensure you have JDK 17 or higher configured.
+2. **Android Studio**: Latest stable version recommended (Ladybug / Koala or newer).
+3. **Android SDK**: The project requires `compileSdk 37` and `minSdk 24`.
+4. **Clone the repository**:
    ```bash
    git clone git@github.com:lagando/Deslize-pra-limpar.git
    cd Deslize-pra-limpar
    ```
-5. **Abra o projeto**: No Android Studio, abra a pasta `android/`.
+5. **Open the project**: In Android Studio, open the `android/` directory.
 
 ---
 
-## 📋 Padrões de Código
+## 📋 Code Conventions
 
-- **Linguagem**: 100% Kotlin.
-- **Arquitetura**: MVVM (Model-View-ViewModel):
-  - Lógica de UI e animações nos `Fragments` / `Activities`.
-  - Estado e regras de negócio no `ViewModel` (usando `LiveData` / `StateFlow`).
-  - Acesso a dados e MediaStore isolados no `MediaRepository` e DAOs do Room.
-- **Constantes**:
-  - Evite "strings mágicas" soltas no código. Use `MediaStatus`, `MediaType` e `PrefsKeys`.
-- **URIs do MediaStore**:
-  - Use sempre a extensão/utilitário `buildMediaUri(mediaId, mediaType)`.
-- **Strings e Internacionalização**:
-  - Nunca coloque textos fixos no código ou layouts. Adicione tanto em `res/values/strings.xml` (Inglês) quanto em `res/values-pt/strings.xml` (Português).
-- **Segurança**:
-  - **Nunca** commite chaves de assinatura (`.keystore`), senhas ou tokens no repositório.
+- **Language**: 100% Kotlin.
+- **Architecture**: MVVM (Model-View-ViewModel):
+  - UI logic and animations belong in `Fragments` / `Activities`.
+  - State and business logic belong in `ViewModel` (using `LiveData` / `StateFlow`).
+  - Data layer and MediaStore queries must be isolated in `MediaRepository` and Room DAOs.
+- **Constants**:
+  - Avoid loose magic strings in code. Use `MediaStatus`, `MediaType`, and `PrefsKeys`.
+- **MediaStore URIs**:
+  - Always use the helper extension `buildMediaUri(mediaId, mediaType)`.
+- **Strings and Localization**:
+  - Never hardcode user-facing strings in code or layouts. Add entries to both `res/values/strings.xml` (English) and `res/values-pt/strings.xml` (Portuguese).
+- **Security**:
+  - **Never** commit signing keys (`.keystore`), passwords, or secrets to the repository.
 
 ---
 
-## 🧪 Testes
+## 🧪 Testing
 
-Antes de submeter alterações, execute a suíte de testes unitários:
+Before submitting changes, run the unit test suite:
 
 ```bash
 cd android
 ./gradlew test
 ```
 
-Novas funcionalidades e utilitários devem vir acompanhados de seus respectivos testes unitários em `android/app/src/test/`.
+New features and utility methods should include unit tests in `android/app/src/test/`.
 
 ---
 
-## 💬 Padrão de Commits
+## 💬 Commit Convention
 
-Utilizamos o padrão de [Conventional Commits](https://www.conventionalcommits.org/):
+We follow the [Conventional Commits](https://www.conventionalcommits.org/) specification:
 
-- `feat:` Nova funcionalidade
-- `fix:` Correção de bug
-- `refactor:` Alteração que melhora a estrutura do código sem alterar comportamento
-- `test:` Inclusão ou ajuste de testes
-- `docs:` Alterações na documentação
-- `chore:` Tarefas de manutenção (build, gitignore, etc.)
+- `feat:` A new feature
+- `fix:` A bug fix
+- `refactor:` Code changes that neither fix a bug nor add a feature
+- `test:` Adding missing tests or correcting existing tests
+- `docs:` Documentation-only changes
+- `chore:` Maintenance changes (build setup, gitignore, etc.)
 
 ---
 
-## 🚀 Como Enviar um Pull Request
+## 🚀 Submitting a Pull Request
 
-1. Crie uma branch com o nome da sua feature:
+1. Create a branch for your feature or fix:
    ```bash
-   git checkout -b feature/minha-melhoria
+   git checkout -b feature/my-improvement
    ```
-2. Faça seus commits de forma atômica e descritiva.
-3. Certifique-se de que os testes passam e o build compila sem erros.
-4. Envie sua branch para o GitHub:
+2. Make atomic, well-described commits.
+3. Ensure unit tests pass and the build compiles cleanly.
+4. Push your branch to GitHub:
    ```bash
-   git push origin feature/minha-melhoria
+   git push origin feature/my-improvement
    ```
-5. Abra um **Pull Request** explicando claramente o que foi feito, o motivo e como testar.
+5. Open a **Pull Request** explaining what was changed, why, and how to verify it.
