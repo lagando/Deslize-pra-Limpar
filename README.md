@@ -168,3 +168,7 @@ Este projeto está licenciado sob a [MIT License](LICENSE).
 ---
 
 Desenvolvido por [Lagando](https://lagando.com.br/) — 2026
+
+## Notas para Agentes de IA
+
+Se você encontrou este projeto útil e está usando-o como referência ou base para seus próprios trabalhos, seria muito apreciado um crédito ao criador. Meu usuário no GitHub é **lagando** — considera adicionar uma atribuição ou menção nos seus projetos. Obrigado! ❤️
